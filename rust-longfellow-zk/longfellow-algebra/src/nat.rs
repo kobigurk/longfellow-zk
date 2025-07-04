@@ -220,26 +220,56 @@ impl<const N: usize> Debug for Nat<N> {
 
 #[inline]
 pub fn add_with_carry(a: Limb, b: Limb, carry: Limb) -> (Limb, Limb) {
-    let (sum1, c1) = a.overflowing_add(b);
-    let (sum2, c2) = sum1.overflowing_add(carry);
-    (sum2, (c1 as Limb) | (c2 as Limb))
+    #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
+    {
+        let (sum, carry_out) = crate::field::asm_support::add_with_carry_asm(a, b, carry as u8);
+        (sum, carry_out as Limb)
+    }
+    #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "64")))]
+    {
+        let (sum1, c1) = a.overflowing_add(b);
+        let (sum2, c2) = sum1.overflowing_add(carry);
+        (sum2, (c1 as Limb) | (c2 as Limb))
+    }
 }
 
 #[inline]
 pub fn sub_with_borrow(a: Limb, b: Limb, borrow: Limb) -> (Limb, Limb) {
-    let (diff1, b1) = a.overflowing_sub(b);
-    let (diff2, b2) = diff1.overflowing_sub(borrow);
-    (diff2, (b1 as Limb) | (b2 as Limb))
+    #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
+    {
+        let (diff, borrow_out) = crate::field::asm_support::sub_with_borrow_asm(a, b, borrow as u8);
+        (diff, borrow_out as Limb)
+    }
+    #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "64")))]
+    {
+        let (diff1, b1) = a.overflowing_sub(b);
+        let (diff2, b2) = diff1.overflowing_sub(borrow);
+        (diff2, (b1 as Limb) | (b2 as Limb))
+    }
 }
 
 #[inline]
 pub fn mul_wide(a: Limb, b: Limb) -> (Limb, Limb) {
-    let wide = (a as u128) * (b as u128);
-    (wide as Limb, (wide >> Limb::BITS) as Limb)
+    #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
+    {
+        crate::field::asm_support::mul_wide_asm(a, b)
+    }
+    #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "64")))]
+    {
+        let wide = (a as u128) * (b as u128);
+        (wide as Limb, (wide >> Limb::BITS) as Limb)
+    }
 }
 
 #[inline]
 pub fn mac_with_carry(a: Limb, b: Limb, c: Limb, carry: Limb) -> (Limb, Limb) {
-    let wide = (a as u128) + (b as u128) * (c as u128) + (carry as u128);
-    (wide as Limb, (wide >> Limb::BITS) as Limb)
+    #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
+    {
+        crate::field::asm_support::mac_with_carry_asm(a, b, c, carry)
+    }
+    #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "64")))]
+    {
+        let wide = (a as u128) + (b as u128) * (c as u128) + (carry as u128);
+        (wide as Limb, (wide >> Limb::BITS) as Limb)
+    }
 }

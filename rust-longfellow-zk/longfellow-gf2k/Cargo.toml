@@ -1,0 +1,23 @@
+[package]
+name = "longfellow-gf2k"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+zeroize = { workspace = true }
+subtle = "2.5"
+rand = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+rand = { workspace = true }
+
+[[bench]]
+name = "gf2k_bench"
+harness = false

@@ -62,6 +62,13 @@ impl<F: Field> FFT<F> {
             )));
         }
 
+        // Use SIMD version if available and size is large enough
+        #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
+        if self.size >= 1024 {
+            crate::fft_simd::fft_vectorized(data, twiddles, self.log_size);
+            return Ok(());
+        }
+
         bit_reverse_inplace(data);
 
         let mut stride = 1;

@@ -20,6 +20,15 @@ pub enum LongfellowError {
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
     
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+    
+    #[error("Parse error: {0}")]
+    ParseError(String),
+    
+    #[error("Compression error: {0}")]
+    CompressionError(String),
+    
     #[error("Other error: {0}")]
     Other(String),
 }

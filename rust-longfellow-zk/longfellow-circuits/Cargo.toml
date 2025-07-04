@@ -1,0 +1,18 @@
+[package]
+name = "longfellow-circuits"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+longfellow-arrays = { path = "../longfellow-arrays" }
+longfellow-sumcheck = { path = "../longfellow-sumcheck" }
+longfellow-ligero = { path = "../longfellow-ligero" }
+longfellow-ec = { path = "../longfellow-ec" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+sha2 = { workspace = true }
+sha3 = { workspace = true }

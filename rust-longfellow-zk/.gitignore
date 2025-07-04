@@ -132,5 +132,7 @@ __pycache__/
 /benchmark_comparison_output_*.txt
 # But keep the example outputs we created for documentation
 !benchmark_report.md
+!benchmark_report_with_asm.md
 !equivalence_test_output.txt
 !benchmark_comparison_output.txt
+!benchmark_comparison_output_with_asm.txt

@@ -1,5 +1,6 @@
 pub mod field;
 pub mod fft;
+pub mod fft_simd;
 pub mod polynomial;
 pub mod interpolation;
 pub mod reed_solomon;

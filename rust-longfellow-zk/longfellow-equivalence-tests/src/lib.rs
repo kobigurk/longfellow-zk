@@ -1,6 +1,12 @@
 pub mod ffi;
 pub mod algebra_tests;
 pub mod arrays_tests;
+pub mod merkle_tests;
+pub mod random_tests;
+pub mod ec_tests;
+pub mod util_tests;
+pub mod cbor_tests;
+pub mod circuits_tests;
 pub mod test_harness;
 
 use anyhow::Result;

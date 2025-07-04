@@ -1,0 +1,24 @@
+[package]
+name = "longfellow-zk"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+longfellow-arrays = { path = "../longfellow-arrays" }
+longfellow-random = { path = "../longfellow-random" }
+longfellow-merkle = { path = "../longfellow-merkle" }
+longfellow-ligero = { path = "../longfellow-ligero" }
+longfellow-sumcheck = { path = "../longfellow-sumcheck" }
+longfellow-cbor = { path = "../longfellow-cbor" }
+longfellow-ec = { path = "../longfellow-ec" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+rand = { workspace = true }

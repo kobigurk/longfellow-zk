@@ -1,3 +1,4 @@
+pub mod asm_support;
 pub mod fp_generic;
 pub mod fp128;
 pub mod fp256;

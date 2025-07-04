@@ -1,0 +1,28 @@
+[package]
+name = "longfellow-ligero"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+longfellow-arrays = { path = "../longfellow-arrays" }
+longfellow-random = { path = "../longfellow-random" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+sha2 = { workspace = true }
+sha3 = { workspace = true }
+rand = { workspace = true }
+rand_chacha = { workspace = true }
+zeroize = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+
+[[bench]]
+name = "ligero_bench"
+harness = false

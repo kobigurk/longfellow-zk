@@ -1,0 +1,26 @@
+[package]
+name = "longfellow-ec"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+p256 = { workspace = true }
+ecdsa = { version = "0.16", features = ["signing", "verifying", "der"] }
+elliptic-curve = { version = "0.13", features = ["sec1"] }
+sha2 = { workspace = true }
+rand_core = "0.6"
+subtle = "2.5"
+
+[dev-dependencies]
+hex = "0.4"
+criterion = { workspace = true }
+
+[[bench]]
+name = "ec_bench"
+harness = false

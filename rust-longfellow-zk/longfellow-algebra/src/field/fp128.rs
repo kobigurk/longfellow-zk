@@ -23,28 +23,61 @@ impl Fp128Reduce {
 
 impl FieldReduction<2> for Fp128Reduce {
     fn reduction_step(a: &mut [Limb], _mprime: Limb, _modulus: &Nat<2>) {
-        let r = (!a[0]).wrapping_add(1);
-        
-        let sub_lo = r << 44;
-        let sub_hi = r >> 20;
-        
-        let (sum1, carry1) = a[0].overflowing_add(r);
-        a[0] = sum1;
-        
-        let (sum2, carry2) = a[2].overflowing_add(r);
-        let (sum3, carry3) = sum2.overflowing_add(carry1 as u64);
-        a[2] = sum3;
-        
-        if a.len() > 3 {
-            a[3] = a[3].wrapping_add((carry2 | carry3) as u64);
+        #[cfg(target_arch = "x86_64")]
+        {
+            // Use assembly-optimized version
+            let r = (!a[0]).wrapping_add(1);
+            
+            unsafe {
+                use crate::field::asm_support::*;
+                
+                let sub_lo = r << 44;
+                let sub_hi = r >> 20;
+                
+                // a[0] += r, a[2] += r + carry
+                let (sum1, carry1) = add_with_carry_asm(a[0], r, 0);
+                a[0] = sum1;
+                
+                let (sum2, carry2) = add_with_carry_asm(a[2], r, carry1);
+                a[2] = sum2;
+                
+                if a.len() > 3 && carry2 != 0 {
+                    a[3] = a[3].wrapping_add(1);
+                }
+                
+                // a[1] -= sub_lo, a[2] -= sub_hi + borrow
+                let (diff1, borrow1) = sub_with_borrow_asm(a[1], sub_lo, 0);
+                a[1] = diff1;
+                
+                let (diff2, _) = sub_with_borrow_asm(a[2], sub_hi, borrow1);
+                a[2] = diff2;
+            }
         }
-        
-        let (diff1, borrow1) = a[1].overflowing_sub(sub_lo);
-        a[1] = diff1;
-        
-        let (diff2, _) = a[2].overflowing_sub(sub_hi);
-        let (diff3, _) = diff2.overflowing_sub(borrow1 as u64);
-        a[2] = diff3;
+        #[cfg(not(target_arch = "x86_64"))]
+        {
+            let r = (!a[0]).wrapping_add(1);
+            
+            let sub_lo = r << 44;
+            let sub_hi = r >> 20;
+            
+            let (sum1, carry1) = a[0].overflowing_add(r);
+            a[0] = sum1;
+            
+            let (sum2, carry2) = a[2].overflowing_add(r);
+            let (sum3, carry3) = sum2.overflowing_add(carry1 as u64);
+            a[2] = sum3;
+            
+            if a.len() > 3 {
+                a[3] = a[3].wrapping_add((carry2 | carry3) as u64);
+            }
+            
+            let (diff1, borrow1) = a[1].overflowing_sub(sub_lo);
+            a[1] = diff1;
+            
+            let (diff2, _) = a[2].overflowing_sub(sub_hi);
+            let (diff3, _) = diff2.overflowing_sub(borrow1 as u64);
+            a[2] = diff3;
+        }
     }
 }
 

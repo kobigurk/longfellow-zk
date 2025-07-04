@@ -1,0 +1,25 @@
+[package]
+name = "longfellow-sumcheck"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+longfellow-arrays = { path = "../longfellow-arrays" }
+longfellow-random = { path = "../longfellow-random" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+itertools = "0.12"
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+rand = { workspace = true }
+
+[[bench]]
+name = "sumcheck_bench"
+harness = false

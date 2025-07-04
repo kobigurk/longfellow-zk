@@ -151,7 +151,7 @@ fn convert_to_cpp_format(rust_proof: &serde_json::Value) -> Result<CppProofForma
         "document" => 5,
         "ligero" => 6,
         "full_zk" => 7,
-        "matrix_multiplication" => 8,
+        "matrix_multiplication" => 4, // Map to circuit type for C++ compatibility
         "hash_chain" => 5, // Map to document type for C++ compatibility
         "matrix" => 4, // Map to circuit type for C++ compatibility  
         _ => return Err(anyhow::anyhow!("Unknown proof type: {}", proof_type_str)),
@@ -295,25 +295,15 @@ fn serialize_proof_data(proof_data: &serde_json::Value) -> Result<Vec<u8>> {
                         writer.write_bytes(&sumcheck_data);
                     }
                 }
-                Some("MatrixMultiplication") => {
-                    writer.write_u8(8);
-                    // Serialize matrix result trace
-                    if let Some(trace) = type_obj.get("result_trace").and_then(|t| t.as_array()) {
-                        writer.write_u32_le(trace.len() as u32);
-                        for elem in trace {
-                            let elem_bytes = hex::decode(elem.as_str().unwrap_or(""))?;
-                            writer.write_bytes(&elem_bytes);
-                        }
-                    }
-                }
                 Some("HashChain") => {
                     // Serialize hash chain data as document format
-                    if let Some(final_hash) = type_obj.get("final_value") {
+                    if let Some(final_hash) = type_obj.get("final_hash") {
                         let hash_bytes = hex::decode(final_hash.as_str().unwrap_or(""))?;
                         let mut padded_hash = hash_bytes;
                         padded_hash.resize(32, 0);
                         writer.write_bytes(&padded_hash);
                     }
+                    // Also check if iterations is in the proof data
                     if let Some(iterations) = type_obj.get("iterations") {
                         writer.write_u32_le(iterations.as_u64().unwrap_or(0) as u32);
                     }
@@ -337,14 +327,45 @@ fn serialize_proof_data(proof_data: &serde_json::Value) -> Result<Vec<u8>> {
                         }
                     }
                 }
+                Some("MatrixMultiplication") => {
+                    // Serialize matrix multiplication data as circuit format
+                    if let Some(trace) = type_obj.get("result_trace").and_then(|t| t.as_array()) {
+                        writer.write_u32_le(trace.len() as u32); // num_constraints
+                        writer.write_u32_le(trace.len() as u32); // num_variables
+                        
+                        // Write trace elements as witness values
+                        for elem in trace {
+                            let elem_bytes = hex::decode(elem.as_str().unwrap_or(""))?;
+                            let mut padded_elem = elem_bytes;
+                            padded_elem.resize(32, 0);
+                            writer.write_bytes(&padded_elem);
+                        }
+                    }
+                }
                 Some("Polynomial") => {
                     // Serialize polynomial data
+                    // First write the number of coefficients
+                    if let Some(coeffs) = type_obj.get("coefficients").and_then(|c| c.as_array()) {
+                        writer.write_u32_le(coeffs.len() as u32);
+                        
+                        // Write each coefficient
+                        for coeff in coeffs {
+                            let coeff_bytes = hex::decode(coeff.as_str().unwrap_or(""))?;
+                            let mut padded_coeff = coeff_bytes;
+                            padded_coeff.resize(32, 0);
+                            writer.write_bytes(&padded_coeff);
+                        }
+                    }
+                    
+                    // Write evaluation point
                     if let Some(eval_point) = type_obj.get("evaluation_point") {
                         let point_bytes = hex::decode(eval_point.as_str().unwrap_or(""))?;
                         let mut padded_point = point_bytes;
                         padded_point.resize(32, 0);
                         writer.write_bytes(&padded_point);
                     }
+                    
+                    // Write evaluation result
                     if let Some(eval_result) = type_obj.get("evaluation_result") {
                         let result_bytes = hex::decode(eval_result.as_str().unwrap_or(""))?;
                         let mut padded_result = result_bytes;

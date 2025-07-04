@@ -11,9 +11,9 @@
 
 ## 📊 **Performance Results**
 
-| Proof Type | Rust Time (ms) | C++ Time (ms) | Speedup | Proof Size | Success Rate |
-|------------|----------------|---------------|---------|------------|-------------|
-| **Field Arithmetic** | `107.999` | `1.123` | `96.2x` | `189 B` | `100.0%` |
+| Proof Type | Generation (ms) | Verification (ms) | Proof Size | Success Rate |
+|------------|-----------------|-------------------|------------|-------------|
+| **Field Arithmetic** | `107.999` | `1.123` | `189 B` | `100.0%` |
 
 ---
 
@@ -23,12 +23,13 @@
 - **Overall Success Rate:** 100.0%
 - **Average Rust Generation:** 107.999 ms
 - **Average C++ Verification:** 1.123 ms
-- **Rust/C++ Ratio:** 96.2x
+- **Generation Time:** 108.0ms
+- **Verification Time:** 1.1ms
 - **Total Proof Data:** 0.2 KB
 
 ## 🚀 **Key Insights**
 
-- **Rust is 96.2x slower** than C++ verification (expected for generation vs verification)
+- **Generation vs Verification:** Proof generation takes ~108ms while verification only takes ~1ms (as expected)
 - **Cross-language interoperability** is working seamlessly
 - **Proof sizes** are compact and efficient
 - **Success rate** of 100.0% demonstrates system reliability

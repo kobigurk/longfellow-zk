@@ -4,8 +4,8 @@
   "security_bits": 128,
   "field_modulus": "6100000000000000000000000000000001000000000000000000000000000000",
   "public_inputs": {
-    "b": "69f512ccc7c2ec8669f512feab7a668a",
     "a": "594fa75db109584d594fa7c88aa72a92",
+    "b": "69f512ccc7c2ec8669f512feab7a668a",
     "c": "2e43d2e7b6782d672e43d29592c1b74b"
   },
   "proof_data": {
@@ -18,7 +18,7 @@
   },
   "metadata": {
     "version": "1.0.0",
-    "created_at": 1751669541,
+    "created_at": 1751669996,
     "security_bits": 128,
     "proof_system": "longfellow",
     "field_name": "Fp128_field_arithmetic"

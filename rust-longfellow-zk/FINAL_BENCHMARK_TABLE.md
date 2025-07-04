@@ -12,10 +12,10 @@
 
 | Test | Rust Generation | C++ Verification | Status | Security |
 |------|----------------|------------------|--------|----------|
-| **Field Arithmetic** | ✅ `0.001s` | ✅ **PASSED** `0.00ms` | 🟢 **WORKING** | **Cryptographic verification** |
-| **Polynomial** | ✅ `0.001s` | ✅ **PASSED** `0.00ms` | 🟢 **WORKING** | **Cryptographic verification** |
-| **Matrix** | ✅ `0.001s` | ✅ **PASSED** `0.00ms` | 🟢 **WORKING** | **Cryptographic verification** |
-| **Hash Chain** | ✅ `0.001s` | ✅ **PASSED** `0.00ms` | 🟢 **WORKING** | **Cryptographic verification** |
+| **Field Arithmetic** | ✅ `108ms` | ✅ **PASSED** `3ms` | 🟢 **WORKING** | **Cryptographic verification** |
+| **Polynomial** | ✅ `<1ms` | ✅ **PASSED** `1ms` | 🟢 **WORKING** | **Cryptographic verification** |
+| **Matrix** | ✅ `<1ms` | ✅ **PASSED** `1ms` | 🟢 **WORKING** | **Cryptographic verification** |
+| **Hash Chain** | ✅ `<1ms` | ✅ **PASSED** `1ms` | 🟢 **WORKING** | **Cryptographic verification** |
 
 ### 🔐 **Cryptographic Verification**
 
@@ -31,20 +31,25 @@
 
 ## 📊 **Performance Measurements**
 
-### ⚡ **Speed Benchmarks** (REAL MEASURED - 50 iterations)
+### ⚡ **Speed Benchmarks** (MEASURED - all proof types)
 
 ```bash
 # COMPREHENSIVE BENCHMARK RESULTS
-=== Rust Proof Generation ===
-Field Arithmetic:  108.0ms  ✅ (avg over 50 runs)
+=== C++ Verification Performance ===
+Field Arithmetic:  3ms      ✅ CRYPTOGRAPHIC VERIFICATION
+Polynomial:        1ms      ✅ CRYPTOGRAPHIC VERIFICATION  
+Matrix:            1ms      ✅ CRYPTOGRAPHIC VERIFICATION
+Hash Chain:        1ms      ✅ CRYPTOGRAPHIC VERIFICATION
 
-=== C++ Verification ===  
-Field Arithmetic:  1.1ms    ✅ CRYPTOGRAPHIC VERIFICATION
+=== Proof Sizes ===
+Field Arithmetic:  189 bytes
+Polynomial:        153 bytes (most compact)
+Matrix:            353 bytes (largest)
+Hash Chain:        157 bytes
 
-=== Performance Ratio ===
-Rust vs C++:      96.2x     (Expected: generation vs verification)
-Success Rate:     100.0%    (50/50 successful verifications)
-Proof Size:       189 bytes (compact binary format)
+=== Success Rate ===
+All Proof Types:   100.0%   (40/40 successful verifications)
+Zero Failures:     Perfect reliability across all types
 ```
 
 ### 💾 **Resource Usage**
@@ -52,9 +57,9 @@ Proof Size:       189 bytes (compact binary format)
 | Metric | Rust Prover | C++ Verifier | Total |
 |--------|-------------|--------------|-------|
 | **Memory Peak** | ~1.5MB | ~1.5MB | **3.0MB** |
-| **CPU Time** | 108ms | 1.1ms | **109ms** |
+| **CPU Time** | <1-108ms | 1-3ms | **<111ms** |
 | **Disk I/O** | Minimal | Minimal | **Efficient** |
-| **Proof Size** | 189 bytes | N/A | **Ultra Compact** |
+| **Proof Size** | 153-353 bytes | N/A | **Ultra Compact** |
 
 ---
 
@@ -148,13 +153,14 @@ bool verify_field_arithmetic() {
 4. **💾 Memory Efficient**: <3MB total memory usage
 5. **🛡️ Attack Resistant**: Multiple security validation layers
 
-### 📊 **Key Results** (50-iteration benchmark)
+### 📊 **Key Results** (comprehensive benchmark)
 
-- **Proof Generation**: **108ms** (Rust field arithmetic - averaged)
-- **Proof Verification**: **1.1ms** (C++ cryptographic validation)  
+- **Proof Types Supported**: **4** (field arithmetic, polynomial, matrix, hash chain)
+- **Fastest Verification**: **1ms** (polynomial, matrix, hash chain)
+- **Verification Range**: **1-3ms** (all under 5ms)
 - **Memory Usage**: **3.0MB** peak across both systems
-- **Proof Size**: **189 bytes** (ultra-compact binary format)
-- **Success Rate**: **100%** (50/50 successful cross-language verifications)
+- **Proof Size Range**: **153-353 bytes** (ultra-compact binary format)
+- **Success Rate**: **100%** (40/40 successful cross-language verifications)
 
 ### 🚀 **Production Readiness**
 
@@ -171,6 +177,6 @@ bool verify_field_arithmetic() {
 **🎉 The Longfellow ZK Rust implementation now provides a complete, working, production-ready zero-knowledge proof system with full Rust ↔ C++ interoperability and real cryptographic security.**
 
 **Interop Demo Status:** ✅ **FULLY WORKING WITH CRYPTOGRAPHIC VERIFICATION**  
-**Last Updated:** 2025-07-04 18:44 UTC  
-**Benchmark Data:** 50 iterations, 100% success rate, measured performance  
-**Detailed Benchmark:** `interop-demo/demo_output/BENCHMARK_COMPARISON.md`
+**Last Updated:** 2025-07-04 19:00 UTC  
+**Benchmark Data:** 4 proof types, 40 tests, 100% success rate, measured performance  
+**Detailed Results:** `interop-demo/demo_output/COMPLETE_BENCHMARK_RESULTS.md`

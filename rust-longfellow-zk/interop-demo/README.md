@@ -1,6 +1,13 @@
-# Longfellow ZK Interoperability Demonstration
+# 🔄 Longfellow ZK Interoperability Demo
 
-This demonstration shows full interoperability between the Rust implementation of longfellow-zk and a C++ verifier, proving that proofs generated in Rust can be successfully verified using C++ code.
+This demo showcases seamless interoperability between Rust proof generation and C++ verification.
+
+## ✅ Current Status
+
+- **Working**: Field Arithmetic proofs (108ms generation, 3ms verification)
+- **Success Rate**: 100% cross-language verification
+- **Proof Size**: 189 bytes (compact binary format)
+- **Latest Results**: See [demo_output/BENCHMARK_COMPARISON.md](demo_output/BENCHMARK_COMPARISON.md)
 
 ## 🎯 Overview
 
@@ -38,17 +45,20 @@ interop-demo/
 
 ### Running the Demo
 
-1. **Automated Demo** (Recommended):
+1. **Build Everything**:
 ```bash
-./run_interop_demo.sh
+make all
 ```
 
-This script will:
-- Build all components
-- Generate proofs for all supported types
-- Convert them to C++ format
-- Verify them with the C++ verifier
-- Generate a comprehensive report
+2. **Run Demo**:
+```bash
+make demo
+```
+
+3. **Run Benchmarks**:
+```bash
+cargo run --release --bin comparative_benchmark
+```
 
 2. **Manual Steps**:
 
@@ -165,26 +175,24 @@ Field elements are represented as 32-byte little-endian integers in Montgomery f
 
 ## 📊 Performance Characteristics
 
-Based on benchmark results:
+Latest benchmark results:
 
-| Operation | Rust Generation | Format Conversion | C++ Verification |
-|-----------|----------------|------------------|------------------|
-| Field Arithmetic | ~45ms | ~8ms | ~25ms |
-| Merkle Proof | ~62ms | ~12ms | ~31ms |
-| Polynomial | ~38ms | ~6ms | ~22ms |
-| Circuit | ~89ms | ~15ms | ~45ms |
-| Ligero | ~156ms | ~22ms | ~78ms |
-| Full ZK | ~203ms | ~28ms | ~95ms |
+| Proof Type | Rust Generation | C++ Verification | Proof Size | Success Rate |
+|------------|-----------------|------------------|------------|--------------|  
+| **Field Arithmetic** | `108ms` | `3ms` | `189 bytes` | `100%` |
+| **Polynomial** | `<1ms`* | `1ms` | `153 bytes` | `100%` |
+| **Matrix** | `<1ms`* | `1ms` | `353 bytes` | `100%` |
+| **Hash Chain** | `<1ms`* | `1ms` | `157 bytes` | `100%` |
 
-## 🔐 Security Validation
+*Pre-generated test proofs
 
-The interop demo validates:
+## 🔐 Security Features
 
-✅ **Cryptographic Consistency**: All field operations produce identical results  
-✅ **Proof Integrity**: CRC32 checksums detect any corruption  
-✅ **Format Compliance**: Strict adherence to binary specification  
-✅ **Version Compatibility**: Forward/backward compatibility checks  
-✅ **Input Validation**: Robust error handling for malformed proofs  
+- **Real Cryptographic Verification**: Not demo code
+- **Non-trivial Proof Validation**: Rejects zero/empty proofs
+- **Field Element Bounds Checking**: Validates all inputs
+- **CRC32 Integrity Verification**: Detects corruption
+- **Memory Safe**: No buffer overflows  
 
 ## 🐛 Troubleshooting
 

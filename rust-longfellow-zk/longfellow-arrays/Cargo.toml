@@ -1,0 +1,18 @@
+[package]
+name = "longfellow-arrays"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+thiserror = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+rand = { workspace = true }

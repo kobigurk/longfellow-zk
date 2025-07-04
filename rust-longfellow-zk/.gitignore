@@ -1,0 +1,136 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file (optional for libraries, but we'll include it for reproducibility)
+# Uncomment if you want to exclude it
+# Cargo.lock
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# vim
+*.vim
+.*.swp
+.*.swo
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Benchmark results
+/target/criterion/
+/benchmark_results_*/
+perf.data
+perf.data.old
+flamegraph.svg
+*.massif.out
+
+# Profiling data
+*.profraw
+*.profdata
+/tmp/pgo/
+
+# Test output
+*.log
+test_output/
+test_results/
+
+# Generated documentation
+/target/doc/
+
+# Equivalence test artifacts
+/longfellow-equivalence-tests/cpp_tests/*.o
+/longfellow-equivalence-tests/cpp_tests/*.exe
+/longfellow-equivalence-tests/cpp_tests/test_*
+!longfellow-equivalence-tests/cpp_tests/test_*.cc
+!longfellow-equivalence-tests/cpp_tests/test_*.h
+
+# Generated bindings
+/longfellow-equivalence-tests/src/generated_bindings.rs
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# OS files
+Thumbs.db
+.DS_Store
+.directory
+
+# Coverage reports
+*.lcov
+/coverage/
+/target/cov/
+/target/coverage/
+
+# Debug files
+*.dSYM/
+*.pdb
+
+# Python cache (for any helper scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Local configuration
+.env
+.env.local
+
+# Build directories from C++ comparison
+/clang-build-*/
+/gcc-build-*/
+/build/
+
+# Example outputs (but keep the examples themselves)
+/examples/output/
+*.out
+
+# Benchmark comparison outputs (keep the examples for documentation)
+/benchmark_report_*.md
+/equivalence_test_output_*.txt
+/benchmark_comparison_output_*.txt
+# But keep the example outputs we created for documentation
+!benchmark_report.md
+!equivalence_test_output.txt
+!benchmark_comparison_output.txt

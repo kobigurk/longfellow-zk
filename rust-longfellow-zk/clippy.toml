@@ -1,0 +1,39 @@
+# Clippy linting configuration
+msrv = "1.70.0"
+cognitive-complexity-threshold = 30
+excessive-nesting-threshold = 5
+type-complexity-threshold = 250
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 400
+large-error-threshold = 128
+
+# Allowed lints for cryptographic code
+allow-expect-in-tests = true
+allow-unwrap-in-tests = true
+allow-dbg-in-tests = true
+allow-print-in-tests = true
+
+# Warn on all pedantic lints except these
+warn = [
+    "clippy::pedantic",
+    "clippy::nursery",
+    "clippy::cargo",
+]
+
+# Allow these specific lints
+allow = [
+    "clippy::must_use_candidate",
+    "clippy::missing_const_for_fn",
+    "clippy::module_name_repetitions",
+    "clippy::similar_names",
+    "clippy::doc_markdown",
+    "clippy::missing_errors_doc",
+    "clippy::missing_panics_doc",
+    "clippy::unreadable_literal",
+    "clippy::inline_always",
+    "clippy::cast_possible_truncation",
+    "clippy::cast_sign_loss",
+    "clippy::cast_precision_loss",
+    "clippy::cast_possible_wrap",
+    "clippy::many_single_char_names",
+]

@@ -1,0 +1,25 @@
+[package]
+name = "longfellow-equivalence-tests"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+longfellow-arrays = { path = "../longfellow-arrays" }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = "1.0"
+tempfile = "3.8"
+chrono = "0.4"
+
+[build-dependencies]
+cc = "1.0"
+bindgen = "0.69"
+
+[dev-dependencies]
+criterion = { workspace = true }
+proptest = { workspace = true }
+rand = { workspace = true }

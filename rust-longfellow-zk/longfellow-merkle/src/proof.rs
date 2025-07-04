@@ -1,7 +1,7 @@
 /// Merkle proof structures and verification
 
-use crate::{Hasher, MerkleTree};
-use longfellow_core::{LongfellowError, Result};
+use crate::{Hasher, MerkleTree, DynamicHasher};
+use longfellow_core::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::marker::PhantomData;
@@ -213,6 +213,44 @@ impl<H: Hasher> CompressedProof<H> {
     /// Get the size of this proof in bytes
     pub fn size_bytes(&self) -> usize {
         self.included_nodes.len() + self.hashes.len() * std::mem::size_of::<H::Output>()
+    }
+}
+
+/// A dynamic proof for runtime hash function selection
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DynamicMerkleProof {
+    /// Index of the leaf being proven
+    pub leaf_index: usize,
+    /// Sibling hashes from leaf to root
+    pub siblings: Vec<Vec<u8>>,
+    /// Hash function used
+    #[serde(skip)]
+    pub hasher: DynamicHasher,
+}
+
+impl DynamicMerkleProof {
+    /// Verify this proof against a root hash
+    pub fn verify(&self, root: &[u8], leaf_data: &[u8]) -> bool {
+        let mut current_hash = self.hasher.hash_leaf(leaf_data);
+        let mut current_index = self.leaf_index;
+        
+        for sibling in &self.siblings {
+            if current_index & 1 == 0 {
+                // Current node is left child
+                current_hash = self.hasher.hash_pair(&current_hash, sibling);
+            } else {
+                // Current node is right child
+                current_hash = self.hasher.hash_pair(sibling, &current_hash);
+            }
+            current_index /= 2;
+        }
+        
+        current_hash == root
+    }
+    
+    /// Get the size of this proof in bytes
+    pub fn size_bytes(&self) -> usize {
+        self.siblings.iter().map(|s| s.len()).sum()
     }
 }
 

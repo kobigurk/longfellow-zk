@@ -180,16 +180,16 @@ impl ClaimExtractor for Jwt {
         Ok(claims)
     }
     
-    fn get_claim(&self, path: &str) -> Option<&Value> {
+    fn get_claim(&self, path: &str) -> Option<Value> {
         match path {
-            "iss" => self.payload.iss.as_ref().map(|s| &Value::Text(s.clone())),
-            "sub" => self.payload.sub.as_ref().map(|s| &Value::Text(s.clone())),
-            "aud" => self.payload.aud.as_ref(),
-            "exp" => self.payload.exp.map(|i| &Value::Integer(i)),
-            "nbf" => self.payload.nbf.map(|i| &Value::Integer(i)),
-            "iat" => self.payload.iat.map(|i| &Value::Integer(i)),
-            "jti" => self.payload.jti.as_ref().map(|s| &Value::Text(s.clone())),
-            _ => self.payload.additional.get(path),
+            "iss" => self.payload.iss.as_ref().map(|s| Value::Text(s.clone())),
+            "sub" => self.payload.sub.as_ref().map(|s| Value::Text(s.clone())),
+            "aud" => self.payload.aud.as_ref().cloned(),
+            "exp" => self.payload.exp.map(|i| Value::Integer(i)),
+            "nbf" => self.payload.nbf.map(|i| Value::Integer(i)),
+            "iat" => self.payload.iat.map(|i| Value::Integer(i)),
+            "jti" => self.payload.jti.as_ref().map(|s| Value::Text(s.clone())),
+            _ => self.payload.additional.get(path).cloned(),
         }
     }
 }

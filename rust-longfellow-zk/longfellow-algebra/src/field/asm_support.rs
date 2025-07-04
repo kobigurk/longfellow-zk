@@ -3,7 +3,6 @@
 /// These functions provide low-level optimized implementations
 /// for critical field operations using inline assembly.
 
-use crate::nat::Limb;
 
 /// Multiply two 64-bit values and return (low, high) parts
 #[inline(always)]
@@ -95,14 +94,14 @@ pub fn mac_with_carry_asm(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
         let mut hi: u64;
         unsafe {
             std::arch::asm!(
-                "mul {}",
-                "add {}, {}",
-                "adc {}, {}",
-                in(reg) c,
+                "mul {c}",
+                "add rax, {a}",
+                "adc rdx, {carry}",
                 inlateout("rax") b => lo,
                 lateout("rdx") hi,
-                in(reg) a,
-                in(reg) carry,
+                c = in(reg) c,
+                a = in(reg) a,
+                carry = in(reg) carry,
                 options(pure, nomem, nostack)
             );
         }
@@ -231,31 +230,31 @@ pub fn add_fp128_asm(a: &mut [u64; 2], b: &[u64; 2], modulus: &[u64; 2]) {
 /// Optimized field multiplication for 128-bit fields using MULX instruction
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "bmi2")]
-#[inline(always)]
+#[inline]
 pub unsafe fn mul_fp128_mulx(a: &[u64; 2], b: &[u64; 2], result: &mut [u64; 4]) {
     use std::arch::x86_64::{_mulx_u64, _addcarryx_u64};
     
-    let mut carry: u8;
-    let mut hi: u64;
+    let mut _carry: u8 = 0;
+    let mut hi: u64 = 0;
     
     // a[0] * b[0]
     result[0] = _mulx_u64(a[0], b[0], &mut result[1]);
     
     // a[0] * b[1]
     let t0 = _mulx_u64(a[0], b[1], &mut hi);
-    carry = _addcarryx_u64(0, result[1], t0, &mut result[1]);
-    carry = _addcarryx_u64(carry, 0, hi, &mut result[2]);
+    _carry = _addcarryx_u64(0, result[1], t0, &mut result[1]);
+    _carry = _addcarryx_u64(_carry, 0, hi, &mut result[2]);
     
     // a[1] * b[0]
     let t0 = _mulx_u64(a[1], b[0], &mut hi);
-    carry = _addcarryx_u64(0, result[1], t0, &mut result[1]);
-    carry = _addcarryx_u64(carry, result[2], hi, &mut result[2]);
-    result[3] = carry as u64;
+    _carry = _addcarryx_u64(0, result[1], t0, &mut result[1]);
+    _carry = _addcarryx_u64(_carry, result[2], hi, &mut result[2]);
+    result[3] = _carry as u64;
     
     // a[1] * b[1]
     let t0 = _mulx_u64(a[1], b[1], &mut hi);
-    carry = _addcarryx_u64(0, result[2], t0, &mut result[2]);
-    carry = _addcarryx_u64(carry, result[3], hi, &mut result[3]);
+    _carry = _addcarryx_u64(0, result[2], t0, &mut result[2]);
+    _addcarryx_u64(_carry, result[3], hi, &mut result[3]);
 }
 
 #[cfg(test)]

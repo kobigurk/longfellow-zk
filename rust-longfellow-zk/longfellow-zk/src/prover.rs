@@ -5,10 +5,10 @@ use crate::{
     document::{ClaimExtractor, CommitmentGenerator},
 };
 use longfellow_algebra::traits::Field;
+use rand::SeedableRng;
 use longfellow_core::{LongfellowError, Result};
 use longfellow_ligero::{LigeroProver, LigeroInstance, LigeroParams};
 use longfellow_sumcheck::{SumcheckInstance, SumcheckOptions, prover::ProverLayers};
-use longfellow_random::FieldRng;
 use rand::{CryptoRng, RngCore};
 
 /// Zero-knowledge prover
@@ -134,7 +134,7 @@ impl<F: Field> ZkProver<F> {
             ))?;
         
         // Create sumcheck instance
-        let claimed_sum = circuit.wire_values.iter().sum();
+        let claimed_sum = circuit.wire_values.iter().fold(F::zero(), |acc, x| acc + *x);
         let sumcheck_instance = SumcheckInstance::new(
             sumcheck_circuit.clone(),
             1, // Single copy for now

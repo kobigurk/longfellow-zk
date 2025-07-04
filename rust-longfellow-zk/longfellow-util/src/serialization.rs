@@ -40,9 +40,9 @@ pub fn write_to_file<T: Serialize>(path: impl AsRef<std::path::Path>, value: &T)
     
     let bytes = to_bytes(value)?;
     let mut file = File::create(path)
-        .map_err(|e| LongfellowError::IoError(e.to_string()))?;
+        .map_err(|e| LongfellowError::IoError(e))?;
     file.write_all(&bytes)
-        .map_err(|e| LongfellowError::IoError(e.to_string()))?;
+        .map_err(|e| LongfellowError::IoError(e))?;
     
     Ok(())
 }
@@ -52,7 +52,7 @@ pub fn read_from_file<T: for<'de> Deserialize<'de>>(path: impl AsRef<std::path::
     use std::fs;
     
     let bytes = fs::read(path)
-        .map_err(|e| LongfellowError::IoError(e.to_string()))?;
+        .map_err(|e| LongfellowError::IoError(e))?;
     from_bytes(&bytes)
 }
 
@@ -72,9 +72,9 @@ pub fn write_json_to_file<T: Serialize>(
     };
     
     let mut file = File::create(path)
-        .map_err(|e| LongfellowError::IoError(e.to_string()))?;
+        .map_err(|e| LongfellowError::IoError(e))?;
     file.write_all(json.as_bytes())
-        .map_err(|e| LongfellowError::IoError(e.to_string()))?;
+        .map_err(|e| LongfellowError::IoError(e))?;
     
     Ok(())
 }
@@ -86,7 +86,7 @@ pub fn read_json_from_file<T: for<'de> Deserialize<'de>>(
     use std::fs;
     
     let json = fs::read_to_string(path)
-        .map_err(|e| LongfellowError::IoError(e.to_string()))?;
+        .map_err(|e| LongfellowError::IoError(e))?;
     from_json(&json)
 }
 

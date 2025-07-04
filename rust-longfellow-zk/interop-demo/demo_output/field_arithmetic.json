@@ -1,0 +1,28 @@
+{
+  "proof_type": "field_arithmetic",
+  "version": "1.0.0",
+  "security_bits": 128,
+  "field_modulus": "6100000000000000000000000000000001000000000000000000000000000000",
+  "public_inputs": {
+    "c": "3b7b817ec8ff8916b10ceeba65604f02",
+    "b": "54d54aa5a026fba028a0f5cd3aa05501",
+    "a": "6d2f14cc784d6c2b9f33fde00fe05b",
+    "d": "e450d116c9114d6fe29d03f5e9e23928"
+  },
+  "proof_data": {
+    "type": "FieldArithmetic",
+    "result": "1a544fcc00fdce35bd1de4b79a68a1f4",
+    "intermediate_values": [
+      "a550619bc2a5fcce1418bd47eb232d6f",
+      "6f5c934d396fe086eb6117dcbfce40a9",
+      "17adf4e8fb44dd55fc79d41dab626e18",
+      "32037eb537eb81c6db7fe0c8b02567cc",
+      "1a544fcc00fdce35bd1de4b79a68a1f4"
+    ]
+  },
+  "metadata": {
+    "generated_at": 1751656863,
+    "prover_version": "1.0.0",
+    "generation_time_ms": 0.0
+  }
+}

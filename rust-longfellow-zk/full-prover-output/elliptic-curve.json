@@ -1,0 +1,24 @@
+{
+  "proof_type": "elliptic_curve",
+  "version": "1.0.0",
+  "timestamp": 1751658374,
+  "security_bits": 256,
+  "proof_data": {
+    "type": "EllipticCurve",
+    "curve": "P-256",
+    "public_key": "0404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404",
+    "signature": {
+      "r": "be7e6d07a70c86a0b5d390365f04c29fbc42c77efb9728b76e6a3445424d848a",
+      "s": "0101010101010101010101010101010101010101010101010101010101010101"
+    },
+    "message": "48656c6c6f2c204c6f6e6766656c6c6f77205a4b21",
+    "valid": true
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "P-256 Field",
+    "curve": "secp256r1",
+    "hash_function": "SHA-256",
+    "computation_time_ms": 0
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "proof_type": "field_arithmetic",
+  "version": "1.0.0",
+  "timestamp": 1751658374,
+  "security_bits": 128,
+  "proof_data": {
+    "type": "FieldArithmetic",
+    "statement": "(a + b) * c = d",
+    "public_inputs": {
+      "b": "aa8409cfceee791432aefe7f07202b",
+      "a": "7ae406ff22efd30e620bff6f05201f",
+      "c": "11260128dbcf78023bd7ffec00e004",
+      "d": "b9d4ec9347ad1af009ff8c2a51cadc07"
+    },
+    "witness": [
+      "7ae406ff22efd30e620bff6f05201f",
+      "aa8409cfceee791432aefe7f07202b",
+      "11260128dbcf78023bd7ffec00e004",
+      "286910cef10d4e2391b9fde90ca04a",
+      "b9d4ec9347ad1af009ff8c2a51cadc07"
+    ],
+    "constraints_satisfied": true
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "Fp128",
+    "curve": null,
+    "hash_function": null,
+    "computation_time_ms": 0
+  }
+}

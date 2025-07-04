@@ -1,0 +1,35 @@
+[package]
+name = "longfellow-full-prover"
+version = "0.1.0"
+edition = "2021"
+authors = ["Longfellow ZK Team"]
+
+[[bin]]
+name = "full_prover"
+path = "src/main.rs"
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+longfellow-util = { path = "../longfellow-util" }
+longfellow-merkle = { path = "../longfellow-merkle" }
+longfellow-random = { path = "../longfellow-random" }
+longfellow-gf2k = { path = "../longfellow-gf2k" }
+longfellow-ec = { path = "../longfellow-ec" }
+longfellow-arrays = { path = "../longfellow-arrays" }
+longfellow-ligero = { path = "../longfellow-ligero" }
+longfellow-sumcheck = { path = "../longfellow-sumcheck" }
+# longfellow-zk = { path = "../longfellow-zk" }  # Commented out due to compilation issues
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+bincode = { workspace = true }
+hex = { workspace = true }
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
+log = { workspace = true }
+env_logger = { workspace = true }
+sha2 = { workspace = true }
+chrono = { workspace = true }
+rand = { workspace = true }
+rayon = { workspace = true }

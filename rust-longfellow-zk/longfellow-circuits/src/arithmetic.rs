@@ -156,7 +156,7 @@ impl<F: Field, C: CircuitBuilder<F>> PolynomialCircuit<F, C> {
     /// Polynomial commitment evaluation
     pub fn verify_evaluation(
         &mut self,
-        commitment: usize,
+        _commitment: usize,
         point: usize,
         value: usize,
         proof: &[usize],
@@ -191,7 +191,7 @@ impl<F: Field, C: CircuitBuilder<F>> FixedPointCircuit<F, C> {
     /// Convert integer to fixed-point
     pub fn from_int(&mut self, value: usize) -> Result<usize> {
         // Shift left by frac_bits
-        let scale = utils::const_gate(&mut self.circuit, F::from(1u64 << self.frac_bits))?;
+        let scale = utils::const_gate(&mut self.circuit, F::from_u64(1u64 << self.frac_bits))?;
         utils::mul_gate(&mut self.circuit, value, scale)
     }
     
@@ -216,13 +216,13 @@ impl<F: Field, C: CircuitBuilder<F>> FixedPointCircuit<F, C> {
     
     /// Shift right (division by power of 2)
     fn shift_right(&mut self, value: usize, bits: usize) -> Result<usize> {
-        let divisor = utils::const_gate(&mut self.circuit, F::from(1u64 << bits))?;
+        let divisor = utils::const_gate(&mut self.circuit, F::from_u64(1u64 << bits))?;
         self.integer_divide(value, divisor)
     }
     
     /// Shift left (multiplication by power of 2)
     fn shift_left(&mut self, value: usize, bits: usize) -> Result<usize> {
-        let multiplier = utils::const_gate(&mut self.circuit, F::from(1u64 << bits))?;
+        let multiplier = utils::const_gate(&mut self.circuit, F::from_u64(1u64 << bits))?;
         utils::mul_gate(&mut self.circuit, value, multiplier)
     }
     
@@ -268,7 +268,7 @@ impl<F: Field, C: CircuitBuilder<F>> VectorCircuit<F, C> {
         
         let mut sum = utils::const_gate(&mut self.circuit, F::zero())?;
         
-        for (i, (&a_i, &b_i)) in a.iter().zip(b.iter()).enumerate() {
+        for (_i, (&a_i, &b_i)) in a.iter().zip(b.iter()).enumerate() {
             let product = utils::mul_gate(&mut self.circuit, a_i, b_i)?;
             sum = utils::add_gate(&mut self.circuit, sum, product)?;
         }

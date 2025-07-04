@@ -1,6 +1,6 @@
 /// Logging utilities
 
-use log::{Level, LevelFilter, Metadata, Record};
+use log::{Level, LevelFilter};
 use env_logger::Builder;
 use std::io::Write;
 use std::sync::Once;
@@ -77,7 +77,7 @@ pub fn log_with_metadata(
     level: Level,
     target: &str,
     message: &str,
-    metadata: &[("tag", &str)],
+    metadata: &[(&str, &str)],
 ) {
     let mut msg = message.to_string();
     

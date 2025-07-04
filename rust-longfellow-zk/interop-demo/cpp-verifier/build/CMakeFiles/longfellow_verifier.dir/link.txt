@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblongfellow_verifier.a CMakeFiles/longfellow_verifier.dir/cpp_verifier.cpp.o
+/usr/bin/ranlib liblongfellow_verifier.a

@@ -1,0 +1,4 @@
+test Fp128/addition ... bench:           3 ns/iter (+/- 0)
+test Fp128/multiplication ... bench:          56 ns/iter (+/- 0)
+test Fp128/inversion ... bench:        3772 ns/iter (+/- 90)
+

@@ -3,7 +3,6 @@
 use longfellow_algebra::traits::Field;
 use longfellow_core::{LongfellowError, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// A corner in the sparse quadratic form
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]

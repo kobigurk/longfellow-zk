@@ -1,5 +1,4 @@
 use crate::traits::Field;
-use longfellow_core::Result;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Clone, Debug, PartialEq, Eq)]

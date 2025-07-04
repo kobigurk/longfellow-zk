@@ -88,13 +88,13 @@ impl ClaimExtractor {
     pub fn extract_claim(doc: &DocumentData, path: &str) -> Option<Value> {
         match doc {
             DocumentData::Jwt(jwt) => {
-                longfellow_cbor::ClaimExtractor::get_claim(jwt, path).cloned()
+                longfellow_cbor::ClaimExtractor::get_claim(jwt, path)
             }
             DocumentData::Mdoc(mdoc) => {
-                longfellow_cbor::ClaimExtractor::get_claim(mdoc, path).cloned()
+                longfellow_cbor::ClaimExtractor::get_claim(mdoc, path)
             }
             DocumentData::VerifiableCredential(vc) => {
-                longfellow_cbor::ClaimExtractor::get_claim(vc, path).cloned()
+                longfellow_cbor::ClaimExtractor::get_claim(vc, path)
             }
             DocumentData::Raw(_) => None,
         }

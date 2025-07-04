@@ -12,13 +12,13 @@ use crate::{
 
 /// Sumcheck verifier for a single layer
 pub struct Verifier<F: Field> {
-    layer: Layer<F>,
+    _layer: Layer<F>,
 }
 
 impl<F: Field> Verifier<F> {
     /// Create a new verifier
     pub fn new(layer: Layer<F>) -> Self {
-        Self { layer }
+        Self { _layer: layer }
     }
     
     /// Verify sumcheck proof for a layer
@@ -38,8 +38,8 @@ impl<F: Field> Verifier<F> {
             
             // Check sum: p(0) + p(1) + p(2) + p(3) = claim
             let sum = (0..=3)
-                .map(|i| poly.evaluate(F::from(i as u64)))
-                .sum::<F>();
+                .map(|i| poly.evaluate(F::from_u64(i as u64)))
+                .fold(F::zero(), |acc, x| acc + x);
             
             if sum != current_claim {
                 return Ok((false, vec![]));
@@ -77,7 +77,7 @@ impl<F: Field> Verifier<F> {
         transcript.append_wire_claims(0, &proof.wire_claims);
         
         // Check that wire claims sum to current claim
-        let wire_sum: F = proof.wire_claims.iter().sum();
+        let wire_sum: F = proof.wire_claims.iter().fold(F::zero(), |acc, &x| acc + x);
         if wire_sum != current_claim {
             return Ok((false, vec![]));
         }
@@ -123,7 +123,7 @@ impl<F: Field> VerifierLayers<F> {
         let mut all_bindings = Vec::new();
         
         // Verify each layer
-        for (layer_idx, (layer, layer_proof)) in self.circuit.layers.iter()
+        for (_layer_idx, (layer, layer_proof)) in self.circuit.layers.iter()
             .zip(&proof.layer_proofs)
             .enumerate() 
         {
@@ -141,7 +141,7 @@ impl<F: Field> VerifierLayers<F> {
             all_bindings.extend(bindings);
             
             // Update claim for next layer
-            current_claim = layer_proof.wire_claims.iter().sum();
+            current_claim = layer_proof.wire_claims.iter().fold(F::zero(), |acc, &x| acc + x);
         }
         
         // Verify final input evaluation
@@ -160,7 +160,7 @@ impl<F: Field> VerifierLayers<F> {
     /// Compute expected input evaluation at binding point
     fn compute_expected_input_eval(
         &self,
-        bindings: &[F],
+        _bindings: &[F],
         input_eval: &[F],
     ) -> Result<F> {
         // This would compute the multilinear extension of inputs
@@ -172,7 +172,7 @@ impl<F: Field> VerifierLayers<F> {
         }
         
         // For now, return sum of input evaluations
-        Ok(input_eval.iter().sum())
+        Ok(input_eval.iter().fold(F::zero(), |acc, &x| acc + x))
     }
     
     /// Verify with public inputs

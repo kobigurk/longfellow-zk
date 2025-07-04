@@ -76,7 +76,7 @@ mod tests {
             TestField(val % 101)
         }
 
-        fn from_bytes_le(_bytes: &[u8]) -> crate::longfellow_core::Result<Self> {
+        fn from_bytes_le(_bytes: &[u8]) -> longfellow_core::Result<Self> {
             unimplemented!()
         }
 

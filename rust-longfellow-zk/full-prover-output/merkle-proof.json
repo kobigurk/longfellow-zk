@@ -1,0 +1,28 @@
+{
+  "proof_type": "merkle_proof",
+  "version": "1.0.0",
+  "timestamp": 1751658374,
+  "security_bits": 256,
+  "proof_data": {
+    "type": "MerkleProof",
+    "merkle_root": "3d0bac7b60fd70b1cb67f32c249eafc73f3374704d609acb8e6bbd97d0b69f15",
+    "leaf_index": 42,
+    "leaf_value": "6c6561665f3432",
+    "siblings": [
+      "e0990d63db0c00d19284c3cb63361352d4528f3d2771c0c8d968396fe6a6aeb9",
+      "b2f914db1c87aef27e446fd0951cf66ce0ee783c8fcb83cb2b2aee4ed104affe",
+      "62fd2e82b347f84496abf13d055587d48b98f1963b2046348e73f8e6fb0e9565",
+      "6e3d813724215cb7ba53ad0f4878e1f4f5600d88f4822a0cde409d67c050b213",
+      "5129de7201b4fe0387669f6f61e5a883bb89e5e99573663f61af386c4d15f51c",
+      "b604af2e15ddffdd077ba07b70d882a647ea2eb59b8e7ece1600ad6f5db73eea"
+    ],
+    "hash_function": "BLAKE3"
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "Binary",
+    "curve": null,
+    "hash_function": "BLAKE3",
+    "computation_time_ms": 0
+  }
+}

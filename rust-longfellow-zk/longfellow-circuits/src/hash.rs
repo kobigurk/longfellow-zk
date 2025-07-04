@@ -28,7 +28,7 @@ impl<F: Field, C: CircuitBuilder<F>> Sha256Circuit<F, C> {
         }
         
         // SHA-256 initial hash values
-        let mut h = vec![
+        let h = vec![
             0x6a09e667u32, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
             0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
         ];
@@ -131,7 +131,7 @@ impl<F: Field, C: CircuitBuilder<F>> Sha3Circuit<F, C> {
     pub fn hash(&mut self, message_bits: &[usize], output_bits: usize) -> Result<Vec<usize>> {
         // SHA-3 uses a sponge construction with Keccak-f[1600]
         let rate = 1088; // For SHA3-256
-        let capacity = 512;
+        let _capacity = 512;
         
         // Initialize state (5x5x64 bits = 1600 bits)
         let mut state = vec![vec![vec![0usize; 64]; 5]; 5];
@@ -271,7 +271,7 @@ impl<F: Field, C: CircuitBuilder<F>> PoseidonCircuit<F, C> {
     fn round(&mut self, state: &mut [usize], round: usize) -> Result<()> {
         // Add round constants
         for i in 0..self.width {
-            let rc = utils::const_gate(&mut self.circuit, F::from(round as u64 * self.width as u64 + i as u64))?;
+            let rc = utils::const_gate(&mut self.circuit, F::from_u64(round as u64 * self.width as u64 + i as u64))?;
             state[i] = utils::add_gate(&mut self.circuit, state[i], rc)?;
         }
         
@@ -288,7 +288,7 @@ impl<F: Field, C: CircuitBuilder<F>> PoseidonCircuit<F, C> {
         for i in 0..self.width {
             for j in 0..self.width {
                 // Simple MDS matrix: M[i][j] = i + j + 1
-                let coeff = utils::const_gate(&mut self.circuit, F::from((i + j + 1) as u64))?;
+                let coeff = utils::const_gate(&mut self.circuit, F::from_u64((i + j + 1) as u64))?;
                 let prod = utils::mul_gate(&mut self.circuit, state[j], coeff)?;
                 new_state[i] = utils::add_gate(&mut self.circuit, new_state[i], prod)?;
             }

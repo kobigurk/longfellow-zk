@@ -1,4 +1,4 @@
-use crate::fft::{polynomial_multiplication, FFT};
+use crate::fft::FFT;
 use crate::polynomial::Polynomial;
 use crate::traits::Field;
 use longfellow_core::{LongfellowError, Result};
@@ -123,7 +123,7 @@ pub struct SystematicReedSolomon<F: Field> {
     n: usize,
     k: usize,
     generator: Polynomial<F>,
-    evaluation_points: Vec<F>,
+    _evaluation_points: Vec<F>,
 }
 
 impl<F: Field> SystematicReedSolomon<F> {
@@ -151,7 +151,7 @@ impl<F: Field> SystematicReedSolomon<F> {
             n,
             k,
             generator,
-            evaluation_points,
+            _evaluation_points: evaluation_points,
         })
     }
 
@@ -164,7 +164,7 @@ impl<F: Field> SystematicReedSolomon<F> {
             )));
         }
 
-        let mut message_poly = Polynomial::new(data.to_vec());
+        let _message_poly = Polynomial::new(data.to_vec());
         
         let shift = self.n - self.k;
         let mut shifted_coeffs = vec![F::zero(); data.len() + shift];

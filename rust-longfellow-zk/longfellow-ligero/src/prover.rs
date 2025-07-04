@@ -1,9 +1,7 @@
 /// Ligero prover implementation
 
 use longfellow_algebra::traits::Field;
-use longfellow_algebra::fft::FFT;
 use longfellow_core::{LongfellowError, Result};
-use longfellow_random::FieldRng;
 use rand::{CryptoRng, RngCore};
 use rayon::prelude::*;
 
@@ -194,8 +192,8 @@ impl<F: Field> LigeroProver<F> {
     /// Compute linear test response
     fn compute_linear_response(
         &self,
-        tableau: &Tableau<F>,
-        witness: &[F],
+        _tableau: &Tableau<F>,
+        _witness: &[F],
         challenges: &[F],
     ) -> Result<Vec<F>> {
         let constraints = &self.instance.constraints.linear_constraints;
@@ -249,7 +247,7 @@ impl<F: Field> LigeroProver<F> {
                     start + self.instance.params.block_size,
                     challenges.len()
                 );
-                challenges[start..end].iter().sum()
+                challenges[start..end].iter().fold(F::zero(), |acc, &x| acc + x)
             })
             .collect::<Vec<F>>();
         

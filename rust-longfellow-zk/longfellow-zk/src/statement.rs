@@ -7,7 +7,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Statement {
     /// Document type
-    pub document_type: DocumentType,
+    pub document_type: crate::DocumentType,
     
     /// Predicates to prove
     pub predicates: Vec<Predicate>,

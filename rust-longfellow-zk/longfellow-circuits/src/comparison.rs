@@ -22,7 +22,7 @@ impl<F: Field, C: CircuitBuilder<F>> RangeProofCircuit<F, C> {
     /// Prove that value is in range [0, 2^bits)
     pub fn prove_range(&mut self, value: usize, bits: usize) -> Result<()> {
         // Decompose into bits
-        let bit_vars = gadgets::bit_decompose(&mut self.circuit, value, bits)?;
+        let _bit_vars = gadgets::bit_decompose(&mut self.circuit, value, bits)?;
         
         // Each bit is already constrained to be boolean
         // The decomposition ensures value = sum(bit_i * 2^i)
@@ -153,8 +153,19 @@ impl<F: Field, C: CircuitBuilder<F>> SortingCircuit<F, C> {
     
     /// Assert a <= b (for sorted list)
     fn assert_monotonic(&mut self, a: usize, b: usize, bits: usize) -> Result<()> {
-        let comp = ComparisonCircuit::new(&mut self.circuit);
-        comp.assert_less_equal(a, b, bits)
+        // Directly implement less_equal constraint using self.circuit
+        // b - a >= 0, so we need to prove b - a is non-negative
+        
+        let difference = self.circuit.alloc_var();
+        self.circuit.add_constraint(Constraint::Linear {
+            coeffs: vec![(b, F::one()), (a, -F::one()), (difference, -F::one())],
+            constant: F::zero(),
+        })?;
+        
+        // Prove difference is non-negative via bit decomposition
+        gadgets::bit_decompose(&mut self.circuit, difference, bits)?;
+        
+        Ok(())
     }
     
     /// Prove permutation: output is a sorted permutation of input
@@ -229,7 +240,10 @@ impl<F: Field, C: CircuitBuilder<F>> MembershipCircuit<F, C> {
         }
         
         // Exactly one indicator is 1
-        let sum = self.sum_values(&indicators)?;
+        let mut sum = utils::const_gate(&mut self.circuit, F::zero())?;
+        for &ind in &indicators {
+            sum = utils::add_gate(&mut self.circuit, sum, ind)?;
+        }
         let one = utils::const_gate(&mut self.circuit, F::one())?;
         utils::assert_equal(&mut self.circuit, sum, one)?;
         
@@ -248,10 +262,23 @@ impl<F: Field, C: CircuitBuilder<F>> MembershipCircuit<F, C> {
     /// Prove value is NOT in set
     pub fn prove_non_membership(&mut self, value: usize, set: &[usize]) -> Result<()> {
         // For each element in set, prove value != element
-        let comp = ComparisonCircuit::new(&mut self.circuit);
-        
         for &element in set {
-            comp.assert_not_equal(value, element)?;
+            // Implement assert_not_equal inline
+            // value != element means (value - element) * inverse = 1
+            // where inverse is the multiplicative inverse of (value - element)
+            
+            let difference = self.circuit.alloc_var();
+            let element_var = utils::const_gate(&mut self.circuit, F::from_u64(element as u64))?;
+            self.circuit.add_constraint(Constraint::Linear {
+                coeffs: vec![(value, F::one()), (element_var, -F::one()), (difference, -F::one())],
+                constant: F::zero(),
+            })?;
+            
+            // For non-zero difference, we need to prove it has an inverse
+            let inverse = self.circuit.alloc_var();
+            let product = utils::mul_gate(&mut self.circuit, difference, inverse)?;
+            let one = utils::const_gate(&mut self.circuit, F::one())?;
+            utils::assert_equal(&mut self.circuit, product, one)?;
         }
         
         Ok(())

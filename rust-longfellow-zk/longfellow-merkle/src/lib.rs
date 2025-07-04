@@ -9,8 +9,8 @@ pub mod hash;
 pub mod proof;
 pub mod batch;
 
-pub use hash::{Hasher, HashFunction};
-pub use proof::{MerkleProof, MultiProof};
+pub use hash::{Hasher, HashFunction, DynamicHasher};
+pub use proof::{MerkleProof, MultiProof, DynamicMerkleProof};
 pub use batch::BatchMerkleTree;
 
 /// Generic Merkle tree implementation
@@ -26,7 +26,7 @@ pub struct MerkleTree<H: Hasher> {
 
 impl<H: Hasher> MerkleTree<H> {
     /// Create a new Merkle tree from data
-    pub fn new<T: AsRef<[u8]>>(data: &[T]) -> Result<Self> {
+    pub fn new<T: AsRef<[u8]> + Sync>(data: &[T]) -> Result<Self> {
         if data.is_empty() {
             return Err(LongfellowError::InvalidParameter(
                 "Cannot create Merkle tree with no data".to_string()
@@ -128,7 +128,7 @@ impl<H: Hasher> MerkleTree<H> {
     /// Verify a proof
     pub fn verify(
         root: &H::Output,
-        leaf_index: usize,
+        _leaf_index: usize,
         leaf_data: &[u8],
         proof: &MerkleProof<H>,
     ) -> bool {
@@ -142,6 +142,121 @@ impl<H: Hasher> MerkleTree<H> {
     
     /// Get all leaves
     pub fn leaves(&self) -> &[H::Output] {
+        &self.nodes[0][..self.num_leaves]
+    }
+}
+
+/// Dynamic Merkle tree that uses runtime hash function selection
+#[derive(Clone)]
+pub struct DynamicMerkleTree {
+    /// Tree nodes organized by level (leaves at index 0)
+    nodes: Vec<Vec<Vec<u8>>>,
+    /// Number of leaves
+    num_leaves: usize,
+    /// Hash function
+    hasher: DynamicHasher,
+}
+
+impl DynamicMerkleTree {
+    /// Create a new Merkle tree from data with specified hash function
+    pub fn new<T: AsRef<[u8]> + Sync>(data: &[T], hash_function: HashFunction) -> Result<Self> {
+        if data.is_empty() {
+            return Err(LongfellowError::InvalidParameter(
+                "Cannot create Merkle tree with no data".to_string()
+            ));
+        }
+        
+        let hasher = DynamicHasher::new(hash_function);
+        let num_leaves = data.len();
+        let tree_size = num_leaves.next_power_of_two();
+        
+        // Compute leaf hashes
+        let mut leaves: Vec<Vec<u8>> = data
+            .par_iter()
+            .map(|item| hasher.hash_leaf(item.as_ref()))
+            .collect();
+        
+        // Pad with empty hashes if needed
+        let empty_hash = hasher.empty_hash();
+        leaves.resize(tree_size, empty_hash);
+        
+        let mut nodes = vec![leaves];
+        
+        // Build tree bottom-up
+        let mut level_size = tree_size;
+        while level_size > 1 {
+            level_size /= 2;
+            let prev_level = &nodes[nodes.len() - 1];
+            
+            let level: Vec<Vec<u8>> = (0..level_size)
+                .into_par_iter()
+                .map(|i| {
+                    hasher.hash_pair(&prev_level[2 * i], &prev_level[2 * i + 1])
+                })
+                .collect();
+            
+            nodes.push(level);
+        }
+        
+        Ok(Self {
+            nodes,
+            num_leaves,
+            hasher,
+        })
+    }
+    
+    /// Get the root hash
+    pub fn root(&self) -> &[u8] {
+        &self.nodes[self.nodes.len() - 1][0]
+    }
+    
+    /// Get the number of leaves
+    pub fn num_leaves(&self) -> usize {
+        self.num_leaves
+    }
+    
+    /// Get tree height
+    pub fn height(&self) -> usize {
+        self.nodes.len()
+    }
+    
+    /// Generate a proof for a leaf at given index
+    pub fn prove(&self, index: usize) -> Result<DynamicMerkleProof> {
+        if index >= self.num_leaves {
+            return Err(LongfellowError::InvalidParameter(
+                format!("Leaf index {} out of range", index)
+            ));
+        }
+        
+        let mut siblings = Vec::with_capacity(self.height() - 1);
+        let mut current_index = index;
+        
+        // Collect siblings from leaf to root
+        for level in 0..self.nodes.len() - 1 {
+            let sibling_index = current_index ^ 1;
+            siblings.push(self.nodes[level][sibling_index].clone());
+            current_index /= 2;
+        }
+        
+        Ok(DynamicMerkleProof {
+            leaf_index: index,
+            siblings,
+            hasher: self.hasher.clone(),
+        })
+    }
+    
+    /// Verify a proof
+    pub fn verify(
+        root: &[u8],
+        _leaf_index: usize,
+        leaf_data: &[u8],
+        proof: &DynamicMerkleProof,
+    ) -> bool {
+        proof.verify(root, leaf_data)
+    }
+    
+    /// Get all leaves
+    pub fn leaves(&self) -> &[Vec<u8>] {
         &self.nodes[0][..self.num_leaves]
     }
 }
@@ -177,7 +292,7 @@ pub struct MerkleForest<H: Hasher> {
 
 impl<H: Hasher> MerkleForest<H> {
     /// Create a new forest with specified tree size
-    pub fn new<T: AsRef<[u8]>>(data: &[T], tree_size: usize) -> Result<Self> {
+    pub fn new<T: AsRef<[u8]> + Sync>(data: &[T], tree_size: usize) -> Result<Self> {
         if tree_size == 0 {
             return Err(LongfellowError::InvalidParameter(
                 "Tree size must be positive".to_string()
@@ -233,6 +348,26 @@ mod tests {
         for i in 0..4 {
             let proof = tree.prove(i).unwrap();
             assert!(MerkleTree::<Sha3_256Hasher>::verify(
+                tree.root(),
+                i,
+                data[i],
+                &proof
+            ));
+        }
+    }
+    
+    #[test]
+    fn test_dynamic_merkle_tree() {
+        let data = vec![b"hello", b"world", b"foo", b"bar"];
+        let tree = DynamicMerkleTree::new(&data, HashFunction::Sha256).unwrap();
+        
+        assert_eq!(tree.num_leaves(), 4);
+        assert_eq!(tree.height(), 3);
+        
+        // Generate and verify proofs
+        for i in 0..4 {
+            let proof = tree.prove(i).unwrap();
+            assert!(DynamicMerkleTree::verify(
                 tree.root(),
                 i,
                 data[i],

@@ -68,19 +68,17 @@ impl<F: Field> UnivariatePoly<F> {
             for j in 0..n {
                 if i != j {
                     // Multiply by (x - j) / (i - j)
-                    let denom = F::from(i as u64) - F::from(j as u64);
+                    let denom = F::from_u64(i as u64) - F::from_u64(j as u64);
                     let inv_denom = denom.invert()
                         .ok_or_else(|| LongfellowError::InvalidParameter(
                             "Interpolation points not distinct".to_string()
                         ))?;
                     
                     // Multiply polynomial by (x - j)
-                    for k in (1..=basis_coeffs.len()).rev() {
-                        if k > 0 {
-                            basis_coeffs[k] = basis_coeffs[k-1] - F::from(j as u64) * basis_coeffs[k];
-                        }
+                    for k in (1..basis_coeffs.len()).rev() {
+                        basis_coeffs[k] = basis_coeffs[k-1] - F::from_u64(j as u64) * basis_coeffs[k];
                     }
-                    basis_coeffs[0] = -F::from(j as u64) * basis_coeffs[0];
+                    basis_coeffs[0] = -F::from_u64(j as u64) * basis_coeffs[0];
                     
                     // Divide by (i - j)
                     for coeff in &mut basis_coeffs {
@@ -200,7 +198,7 @@ impl<F: Field> MultilinearPoly<F> {
             let mut j = 0;
             for i in 0..self.num_vars {
                 if i == var_index {
-                    full_point[i] = F::from(val as u64);
+                    full_point[i] = F::from_u64(val as u64);
                 } else {
                     full_point[i] = point[j];
                     j += 1;
@@ -225,7 +223,7 @@ pub struct PolyHelper;
 impl PolyHelper {
     /// Compute sum over boolean hypercube
     pub fn sum_over_boolean_hypercube<F: Field>(poly: &MultilinearPoly<F>) -> F {
-        poly.evals.iter().sum()
+        poly.evals.iter().fold(F::zero(), |acc, &x| acc + x)
     }
     
     /// Create eq polynomial: eq(x, r) = prod_i (x_i * r_i + (1-x_i) * (1-r_i))

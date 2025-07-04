@@ -1,8 +1,8 @@
 /// Circuit-friendly elliptic curve operations
 
-use crate::{Point, FieldElement, ScalarElement};
+use crate::{FieldElement, Point};
 use longfellow_algebra::traits::Field;
-use longfellow_core::{LongfellowError, Result};
+use longfellow_core::Result;
 
 /// Circuit representation of a field element
 #[derive(Clone, Debug)]
@@ -33,7 +33,7 @@ impl<F: Field> CircuitFieldElement<F> {
                     }
                 }
             }
-            limbs.push(F::from(limb_value));
+            limbs.push(F::from_u64(limb_value));
         }
         
         Ok(Self { limbs, limb_bits })
@@ -43,14 +43,24 @@ impl<F: Field> CircuitFieldElement<F> {
     pub fn to_native(&self) -> Result<FieldElement> {
         let mut bytes = [0u8; 32];
         
-        for (i, &limb) in self.limbs.iter().enumerate() {
-            let limb_u64 = limb.to_u64();
+        // Reconstruct bytes from limbs
+        for (i, limb) in self.limbs.iter().enumerate() {
+            let limb_bytes = limb.to_bytes_le();
+            // Assume each limb is at most 8 bytes
+            let limb_value = if limb_bytes.len() >= 8 {
+                u64::from_le_bytes(limb_bytes[0..8].try_into().unwrap())
+            } else {
+                let mut buf = [0u8; 8];
+                buf[..limb_bytes.len()].copy_from_slice(&limb_bytes);
+                u64::from_le_bytes(buf)
+            };
+            
             for j in 0..self.limb_bits {
                 let bit_idx = i * self.limb_bits + j;
                 if bit_idx < 256 {
                     let byte_idx = bit_idx / 8;
                     let bit_in_byte = bit_idx % 8;
-                    if (limb_u64 >> j) & 1 == 1 {
+                    if (limb_value >> j) & 1 == 1 {
                         bytes[31 - byte_idx] |= 1u8 << bit_in_byte;
                     }
                 }
@@ -110,8 +120,13 @@ impl<F: Field> CircuitEllipticCurve<F> {
     /// Create a new circuit EC instance
     pub fn new(limb_bits: usize) -> Result<Self> {
         // P-256 prime: 2^256 - 2^224 + 2^192 + 2^96 - 1
-        let p_bytes = hex::decode("ffffffff00000001000000000000000000000000ffffffffffffffffffffffff").unwrap();
-        let p = FieldElement::from_bytes(&p_bytes.try_into().unwrap())?;
+        let p_bytes = [
+            0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        ];
+        let p = FieldElement::from_bytes(&p_bytes)?;
         let p_circuit = CircuitFieldElement::from_native(&p, limb_bits)?;
         
         // a = -3 mod p
@@ -124,8 +139,13 @@ impl<F: Field> CircuitEllipticCurve<F> {
         let a_circuit = CircuitFieldElement::from_native(&a, limb_bits)?;
         
         // b parameter
-        let b_bytes = hex::decode("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b").unwrap();
-        let b = FieldElement::from_bytes(&b_bytes.try_into().unwrap())?;
+        let b_bytes = [
+            0x5a, 0xc6, 0x35, 0xd8, 0xaa, 0x3a, 0x93, 0xe7,
+            0xb3, 0xeb, 0xbd, 0x55, 0x76, 0x98, 0x86, 0xbc,
+            0x65, 0x1d, 0x06, 0xb0, 0xcc, 0x53, 0xb0, 0xf6,
+            0x3b, 0xce, 0x3c, 0x3e, 0x27, 0xd2, 0x60, 0x4b,
+        ];
+        let b = FieldElement::from_bytes(&b_bytes)?;
         let b_circuit = CircuitFieldElement::from_native(&b, limb_bits)?;
         
         Ok(Self {

@@ -1,4 +1,4 @@
-use crate::{compute_eq_polynomial, Dense, DenseFiller};
+use crate::{compute_eq_polynomial, Dense};
 use longfellow_algebra::traits::Field;
 use longfellow_core::{LongfellowError, Result};
 

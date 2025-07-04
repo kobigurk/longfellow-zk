@@ -1,40 +1,39 @@
 /// Sumcheck prover implementation
 
 use longfellow_algebra::traits::Field;
-use longfellow_arrays::dense::DenseArray;
+use longfellow_arrays::dense::Dense;
 use longfellow_core::{LongfellowError, Result};
-use longfellow_random::FieldRng;
 use rand::{CryptoRng, RngCore};
-use rayon::prelude::*;
+// use rayon::prelude::*;  // Currently unused
 
 use crate::{
     SumcheckInstance, SumcheckProof, LayerProof, SumcheckOptions,
     circuit::{Circuit, Layer},
-    polynomial::{UnivariatePoly, MultilinearPoly, PolyHelper},
+    polynomial::UnivariatePoly,
     transcript::SumcheckTranscript,
 };
 
 /// Sumcheck prover for a single layer
 pub struct Prover<F: Field> {
     /// Wire values for this layer
-    wires: DenseArray<F>,
+    wires: Dense<F>,
     /// Number of copies
     num_copies: usize,
     /// Options
-    options: SumcheckOptions,
+    _options: SumcheckOptions,
 }
 
 impl<F: Field> Prover<F> {
     /// Create a new prover
     pub fn new(
-        wires: DenseArray<F>,
+        wires: Dense<F>,
         num_copies: usize,
         options: SumcheckOptions,
     ) -> Self {
         Self {
             wires,
             num_copies,
-            options,
+            _options: options,
         }
     }
     
@@ -44,7 +43,7 @@ impl<F: Field> Prover<F> {
         layer: &Layer<F>,
         claim: F,
         transcript: &mut SumcheckTranscript,
-        rng: &mut R,
+        _rng: &mut R,
     ) -> Result<LayerProof<F>> {
         let mut copy_polys = Vec::new();
         let mut hand_polys = Vec::new();
@@ -59,12 +58,12 @@ impl<F: Field> Prover<F> {
             
             // Verify sum
             let sum = (0..=poly.degree())
-                .map(|i| poly.evaluate(F::from(i as u64)))
-                .sum::<F>();
+                .map(|i| poly.evaluate(F::from_u64(i as u64)))
+                .fold(F::zero(), |acc, x| acc + x);
             
             if sum != current_claim {
-                return Err(LongfellowError::ProofError(
-                    format!("Copy poly sum mismatch: {} != {}", sum, current_claim)
+                return Err(LongfellowError::VerificationError(
+                    format!("Copy poly sum mismatch: {:?} != {:?}", sum, current_claim)
                 ));
             }
             
@@ -95,7 +94,7 @@ impl<F: Field> Prover<F> {
             // Verify sum
             let sum = poly.evaluate(F::zero()) + poly.evaluate(F::one());
             if sum != current_claim {
-                return Err(LongfellowError::ProofError(
+                return Err(LongfellowError::VerificationError(
                     "Hand poly sum mismatch".to_string()
                 ));
             }
@@ -139,7 +138,7 @@ impl<F: Field> Prover<F> {
         let mut evals = vec![F::zero(); 4];
         
         for eval_point in 0..4 {
-            let point_val = F::from(eval_point as u64);
+            let point_val = F::from_u64(eval_point as u64);
             let mut sum = F::zero();
             
             // Sum over all unbound copy indices
@@ -148,7 +147,7 @@ impl<F: Field> Prover<F> {
             for copy_idx in 0..unbound_copies {
                 // Compute full copy index with bindings
                 let mut full_idx = 0;
-                let mut bit_pos = 0;
+                let _bit_pos = 0;
                 
                 for (i, &binding) in bindings.iter().enumerate() {
                     if binding == F::one() {
@@ -158,7 +157,7 @@ impl<F: Field> Prover<F> {
                 
                 // Add current round bit
                 if round < self.num_copy_vars() {
-                    if point_val == F::one() || point_val == F::from(3) {
+                    if point_val == F::one() || point_val == F::from_u64(3) {
                         full_idx |= 1 << round;
                     }
                 }
@@ -196,7 +195,7 @@ impl<F: Field> Prover<F> {
         let mut evals = vec![F::zero(); 3];
         
         for eval_point in 0..3 {
-            let point_val = F::from(eval_point as u64);
+            let point_val = F::from_u64(eval_point as u64);
             
             // Evaluate quadratic form with partial bindings
             let mut quad = layer.quad.clone();
@@ -226,17 +225,17 @@ impl<F: Field> Prover<F> {
         let mut sum = F::zero();
         
         // Sum over all gate evaluations
-        for (g, h0, h1, coeff) in layer.quad.iter() {
+        for (_g, h0, h1, coeff) in layer.quad.iter() {
             let left_val = if h0 == 0 {
                 F::one()
             } else {
-                self.wires.get(offset + h0 - 1)?
+                *self.wires.as_slice().get(offset + h0 - 1).ok_or(LongfellowError::InvalidParameter("Wire index out of bounds".to_string()))?
             };
             
             let right_val = if h1 == 0 {
                 F::one()
             } else {
-                self.wires.get(offset + h1 - 1)?
+                *self.wires.as_slice().get(offset + h1 - 1).ok_or(LongfellowError::InvalidParameter("Wire index out of bounds".to_string()))?
             };
             
             sum += coeff * left_val * right_val;
@@ -248,8 +247,8 @@ impl<F: Field> Prover<F> {
     /// Sum quadratic form with partial bindings
     fn sum_quad_with_bindings(
         &self,
-        quad: &crate::quad::Quad<F>,
-        copy_bindings: &[F],
+        _quad: &crate::quad::Quad<F>,
+        _copy_bindings: &[F],
     ) -> Result<F> {
         // This is a placeholder - in practice would sum over remaining variables
         Ok(F::zero())
@@ -285,7 +284,7 @@ impl<F: Field> Prover<F> {
                 }
                 
                 if offset + wire_idx < self.wires.len() {
-                    claims.push(self.wires.get(offset + wire_idx)?);
+                    claims.push(*self.wires.as_slice().get(offset + wire_idx).ok_or(LongfellowError::InvalidParameter("Wire index out of bounds".to_string()))?);
                 }
             }
         }
@@ -299,7 +298,7 @@ pub struct ProverLayers<F: Field> {
     /// The circuit
     circuit: Circuit<F>,
     /// Wire values for all layers
-    all_wires: Vec<DenseArray<F>>,
+    all_wires: Vec<Dense<F>>,
     /// Number of copies
     num_copies: usize,
     /// Options
@@ -329,7 +328,7 @@ impl<F: Field> ProverLayers<F> {
     pub fn prove<R: RngCore + CryptoRng>(
         &self,
         instance: &SumcheckInstance<F>,
-        rng: &mut R,
+rng: &mut R,
     ) -> Result<SumcheckProof<F>> {
         let mut transcript = SumcheckTranscript::new(b"sumcheck");
         transcript.append_circuit_info(
@@ -354,7 +353,7 @@ impl<F: Field> ProverLayers<F> {
             )?;
             
             // Update claim for next layer
-            current_claim = layer_proof.wire_claims.iter().sum();
+            current_claim = layer_proof.wire_claims.iter().fold(F::zero(), |acc, &x| acc + x);
             layer_proofs.push(layer_proof);
         }
         
@@ -372,9 +371,9 @@ impl<F: Field> ProverLayers<F> {
         circuit: &Circuit<F>,
         inputs: &[F],
         num_copies: usize,
-    ) -> Result<Vec<DenseArray<F>>> {
+    ) -> Result<Vec<Dense<F>>> {
         let mut all_wires = Vec::new();
-        let mut current = DenseArray::from_vec(inputs.to_vec());
+        let mut current = Dense::from_vec(1, inputs.len(), inputs.to_vec())?;
         
         // Process layers in reverse (input to output)
         for layer in circuit.layers.iter().rev() {
@@ -390,20 +389,20 @@ impl<F: Field> ProverLayers<F> {
                     let left = if h0 == 0 {
                         F::one()
                     } else {
-                        current.get(in_offset + h0 - 1)?
+                        *current.as_slice().get(in_offset + h0 - 1).ok_or(LongfellowError::InvalidParameter("Wire index out of bounds".to_string()))?
                     };
                     
                     let right = if h1 == 0 {
                         F::one()
                     } else {
-                        current.get(in_offset + h1 - 1)?
+                        *current.as_slice().get(in_offset + h1 - 1).ok_or(LongfellowError::InvalidParameter("Wire index out of bounds".to_string()))?
                     };
                     
                     next_wires[out_offset + g] += coeff * left * right;
                 }
             }
             
-            current = DenseArray::from_vec(next_wires);
+            current = Dense::from_vec(1, next_wires.len(), next_wires)?;
             all_wires.push(current.clone());
         }
         
@@ -414,7 +413,7 @@ impl<F: Field> ProverLayers<F> {
     /// Evaluate inputs at the binding point from transcript
     fn evaluate_inputs_at_binding(
         &self,
-        transcript: &SumcheckTranscript,
+        _transcript: &SumcheckTranscript,
     ) -> Result<Vec<F>> {
         // This would extract bindings from transcript and evaluate
         // For now, return placeholder

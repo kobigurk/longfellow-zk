@@ -1,0 +1,9 @@
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/longfellow_verifier.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/verify_rust_proof.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/test.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/edit_cache.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/rebuild_cache.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/list_install_components.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/install.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/install/local.dir
+/home/kobigurk/dev/longfellow-zk/rust-longfellow-zk/interop-demo/cpp-verifier/build/CMakeFiles/install/strip.dir

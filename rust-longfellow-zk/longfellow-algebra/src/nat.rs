@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
-use std::fmt::{self, Debug, Display};
-use std::ops::{Add, AddAssign, BitAnd, Shl, Shr, Sub, SubAssign};
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeLess};
+use std::fmt::{self, Debug};
+use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 use zeroize::Zeroize;
 
 #[cfg(target_pointer_width = "64")]
@@ -63,7 +62,7 @@ impl<const N: usize> Nat<N> {
             }
             let mut limb_bytes = [0u8; 8];
             limb_bytes[..chunk.len()].copy_from_slice(chunk);
-            limbs[i] = Limb::from_le_bytes(limb_bytes[..limb_bytes].try_into().ok()?);
+            limbs[i] = Limb::from_le_bytes(limb_bytes);
         }
 
         Some(Self { limbs })

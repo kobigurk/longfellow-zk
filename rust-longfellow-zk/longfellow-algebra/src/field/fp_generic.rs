@@ -1,12 +1,12 @@
 use crate::nat::{self, Limb, Nat};
-use crate::traits::{Field, PrimeField};
+use crate::traits::Field;
 use longfellow_core::{LongfellowError, Result};
 use std::marker::PhantomData;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 use zeroize::Zeroize;
 
-pub trait FieldReduction<const N: usize> {
+pub trait FieldReduction<const N: usize>: Copy + Send + Sync + 'static {
     const MODULUS: Nat<N>;
     const MODULUS_STR: &'static str;
     const MODULUS_BITS: u32;
@@ -57,13 +57,13 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
     #[inline]
     pub fn from_montgomery(&self) -> Nat<N> {
         let mut result = self.value;
-        montgomery_reduce::<N, R>(&mut result);
+        Self::montgomery_reduce::<N, R>(&mut result);
         result
     }
 
     #[inline]
     fn montgomery_reduce<const M: usize, Red: FieldReduction<M>>(a: &mut Nat<M>) {
-        let mut extended = [0 as Limb; M * 2];
+        let mut extended = vec![0 as Limb; M * 2];
         extended[..M].copy_from_slice(&a.limbs);
         
         for i in 0..M {
@@ -103,7 +103,7 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
 
     #[inline]
     fn mul_montgomery(&mut self, other: &Self) {
-        let mut result = [0 as Limb; N * 2];
+        let mut result = vec![0 as Limb; N * 2];
         
         for i in 0..N {
             let mut carry = 0;
@@ -116,7 +116,7 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
             result[i + N] = carry;
         }
         
-        let mut reduced = Nat::new(result[..N].try_into().unwrap());
+        let _reduced: Nat<N> = Nat::new(result[..N].try_into().unwrap());
         for i in 0..N {
             R::reduction_step(&mut result[i..], Self::INV, &Self::MODULUS);
         }
@@ -139,10 +139,10 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
         let mut u = Self::ONE.value;
         let mut v = Nat::ZERO;
 
-        while !a.is_zero().into() {
-            if a.is_even().into() {
+        while !bool::from(a.is_zero()) {
+            if bool::from(a.is_even()) {
                 a.shr1();
-                if u.is_odd().into() {
+                if bool::from(u.is_odd()) {
                     let carry = u.add_with_carry(&Self::MODULUS);
                     u.shr1();
                     if carry != 0 {
@@ -167,6 +167,51 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
         } else {
             Some(Self::to_montgomery(v))
         }
+    }
+
+    /// Convert from little-endian bytes
+    pub fn from_bytes_le(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() > N * 8 {
+            return Err(LongfellowError::InvalidParameter(
+                "Byte array too long for field element".to_string()
+            ));
+        }
+        
+        let mut limbs = [0u64; N];
+        for (i, chunk) in bytes.chunks(8).enumerate() {
+            if i >= N {
+                break;
+            }
+            let mut bytes_array = [0u8; 8];
+            bytes_array[..chunk.len()].copy_from_slice(chunk);
+            limbs[i] = u64::from_le_bytes(bytes_array);
+        }
+        
+        let value = Nat::new(limbs);
+        if value >= Self::MODULUS {
+            return Err(LongfellowError::InvalidParameter(
+                "Value exceeds field modulus".to_string()
+            ));
+        }
+        
+        Ok(Self::to_montgomery(value))
+    }
+    
+    /// Convert to little-endian bytes
+    pub fn to_bytes_le(&self) -> Vec<u8> {
+        let value = self.from_montgomery();
+        let mut bytes = Vec::with_capacity(N * 8);
+        
+        for i in 0..N {
+            bytes.extend_from_slice(&value.limbs[i].to_le_bytes());
+        }
+        
+        // Remove trailing zeros
+        while bytes.last() == Some(&0) && bytes.len() > 1 {
+            bytes.pop();
+        }
+        
+        bytes
     }
 }
 

@@ -1,13 +1,13 @@
 /// Ligero verifier implementation
 
 use longfellow_algebra::traits::Field;
-use longfellow_algebra::fft::FFT;
-use longfellow_algebra::polynomial::DensePolynomial;
-use longfellow_core::{LongfellowError, Result};
+// use longfellow_algebra::fft::FFT;  // Currently unused
+// use longfellow_algebra::polynomial::Polynomial;  // Currently unused
+use longfellow_core::Result;
 use std::collections::HashMap;
 
 use crate::{
-    LigeroInstance, LigeroProof, ColumnOpening,
+    LigeroInstance, LigeroProof,
     merkle::MerkleTree,
     transcript::{LigeroTranscript, compute_instance_digest},
     parameters::row_indices,
@@ -161,7 +161,7 @@ impl<F: Field> LigeroVerifier<F> {
             
             // Compute expected value from linear combination
             let mut expected = F::zero();
-            for (i, (&val, &challenge)) in blinding_values.iter().zip(challenges.iter()).enumerate() {
+            for (_i, (&val, &challenge)) in blinding_values.iter().zip(challenges.iter()).enumerate() {
                 expected += val * challenge;
             }
             
@@ -194,18 +194,23 @@ impl<F: Field> LigeroVerifier<F> {
         // Extract the systematic part
         let systematic: Vec<_> = row[..block_size].to_vec();
         
-        // Interpolate polynomial
-        let fft = FFT::<F>::new(block_size)?;
-        let poly = DensePolynomial::interpolate_fft(&systematic, &fft)?;
+        // Interpolate polynomial using evaluation points
+        let eval_points: Vec<(F, F)> = (0..block_size)
+            .map(|i| (F::from_u64(i as u64), systematic[i]))
+            .collect();
+        
+        let poly = longfellow_algebra::interpolation::lagrange_interpolate(&eval_points)?;
         
         // Verify degree bound
-        if poly.degree() >= block_size {
-            return Ok(false);
+        if let Some(degree) = poly.degree() {
+            if degree >= block_size {
+                return Ok(false);
+            }
         }
         
         // Verify encoding matches
         for i in block_size..std::cmp::min(2 * block_size - 1, row.len()) {
-            let point = fft.get_root_of_unity(i);
+            let point = F::from_u64(i as u64);
             let expected = poly.evaluate(&point);
             if row[i] != expected {
                 return Ok(false);

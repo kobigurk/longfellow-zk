@@ -197,7 +197,7 @@ impl<F: Field, C: CircuitBuilder<F>> BitwiseCircuit<F, C> {
     /// Left shift
     pub fn shift_left(&mut self, value: usize, shift: usize, bits: usize) -> Result<usize> {
         let value_bits = gadgets::bit_decompose(&mut self.circuit, value, bits)?;
-        let shift_bits = gadgets::bit_decompose(&mut self.circuit, shift, 8)?; // Max shift 256
+        let _shift_bits = gadgets::bit_decompose(&mut self.circuit, shift, 8)?; // Max shift 256
         
         // For simplicity, assume shift is a constant
         // Real implementation would handle variable shifts
@@ -216,7 +216,7 @@ impl<F: Field, C: CircuitBuilder<F>> BitwiseCircuit<F, C> {
     /// Right shift
     pub fn shift_right(&mut self, value: usize, shift: usize, bits: usize) -> Result<usize> {
         let value_bits = gadgets::bit_decompose(&mut self.circuit, value, bits)?;
-        let shift_bits = gadgets::bit_decompose(&mut self.circuit, shift, 8)?;
+        let _shift_bits = gadgets::bit_decompose(&mut self.circuit, shift, 8)?;
         
         // Simplified implementation
         let mut result_bits = vec![utils::const_gate(&mut self.circuit, F::zero())?; bits];
@@ -231,7 +231,7 @@ impl<F: Field, C: CircuitBuilder<F>> BitwiseCircuit<F, C> {
     }
     
     /// Rotate left
-    pub fn rotate_left(&mut self, value: usize, rotate: usize, bits: usize) -> Result<usize> {
+    pub fn rotate_left(&mut self, value: usize, _rotate: usize, bits: usize) -> Result<usize> {
         // Simplified - real implementation would handle variable rotations
         let value_bits = gadgets::bit_decompose(&mut self.circuit, value, bits)?;
         
@@ -240,7 +240,7 @@ impl<F: Field, C: CircuitBuilder<F>> BitwiseCircuit<F, C> {
     }
     
     /// Rotate right
-    pub fn rotate_right(&mut self, value: usize, rotate: usize, bits: usize) -> Result<usize> {
+    pub fn rotate_right(&mut self, value: usize, _rotate: usize, bits: usize) -> Result<usize> {
         // Simplified - real implementation would handle variable rotations
         let value_bits = gadgets::bit_decompose(&mut self.circuit, value, bits)?;
         

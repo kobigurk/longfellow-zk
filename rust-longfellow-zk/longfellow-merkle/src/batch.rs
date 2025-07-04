@@ -16,12 +16,12 @@ pub struct BatchMerkleTree<H: Hasher> {
 /// Cache for batch operations
 struct BatchCache<H: Hasher> {
     /// Precomputed subtree roots at various levels
-    subtree_roots: Vec<Vec<H::Output>>,
+    _subtree_roots: Vec<Vec<H::Output>>,
 }
 
 impl<H: Hasher> BatchMerkleTree<H> {
     /// Create a new batch Merkle tree
-    pub fn new<T: AsRef<[u8]>>(data: &[T]) -> Result<Self> {
+    pub fn new<T: AsRef<[u8]> + Sync>(data: &[T]) -> Result<Self> {
         let tree = Arc::new(MerkleTree::new(data)?);
         Ok(Self { tree, cache: None })
     }
@@ -39,7 +39,7 @@ impl<H: Hasher> BatchMerkleTree<H> {
             subtree_roots.push(level_roots);
         }
         
-        self.cache = Some(BatchCache { subtree_roots });
+        self.cache = Some(BatchCache { _subtree_roots: subtree_roots });
     }
     
     /// Update multiple leaves efficiently
@@ -58,7 +58,7 @@ impl<H: Hasher> BatchMerkleTree<H> {
         
         // Create new tree with updates
         let mut new_data: Vec<Vec<u8>> = (0..self.tree.num_leaves())
-            .map(|i| {
+            .map(|_i| {
                 // This is inefficient but necessary without storing original data
                 vec![0u8; 32] // Placeholder
             })

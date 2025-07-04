@@ -47,7 +47,7 @@ pub fn bit_decompose<F: Field, C: CircuitBuilder<F>>(
     // Constrain sum of bits * powers of 2 = value
     let mut coeffs = vec![];
     for (i, &bit) in bits.iter().enumerate() {
-        coeffs.push((bit, F::from(1u64 << i)));
+        coeffs.push((bit, F::from_u64(1u64 << i)));
     }
     coeffs.push((value, -F::one()));
     
@@ -68,7 +68,7 @@ pub fn bit_pack<F: Field, C: CircuitBuilder<F>>(
     
     let mut coeffs = vec![];
     for (i, &bit) in bits.iter().enumerate() {
-        coeffs.push((bit, F::from(1u64 << i)));
+        coeffs.push((bit, F::from_u64(1u64 << i)));
     }
     coeffs.push((packed, -F::one()));
     
@@ -150,7 +150,7 @@ pub fn xor_gate<F: Field, C: CircuitBuilder<F>>(
     
     let double_product = circuit.alloc_var();
     circuit.add_constraint(Constraint::Linear {
-        coeffs: vec![(product, F::from(2)), (double_product, -F::one())],
+        coeffs: vec![(product, F::from_u64(2)), (double_product, -F::one())],
         constant: F::zero(),
     })?;
     

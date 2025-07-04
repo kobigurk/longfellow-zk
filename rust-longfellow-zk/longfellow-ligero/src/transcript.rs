@@ -51,7 +51,8 @@ impl LigeroTranscript {
             label.extend_from_slice(&counter.to_le_bytes());
             
             let hash = self.base.challenge_scalar::<longfellow_algebra::Fp128>(&label);
-            let index = (hash.to_u64() as usize) % num_columns;
+            let bytes = hash.to_bytes_le();
+            let index = (u64::from_le_bytes(bytes[..8].try_into().unwrap()) as usize) % num_columns;
             
             if seen.insert(index) {
                 indices.push(index);

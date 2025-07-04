@@ -1,4 +1,4 @@
-use crate::affine::{affine_interpolation, affine_interpolation_conditional};
+use crate::affine::affine_interpolation_conditional;
 use crate::CornerIndex;
 use longfellow_algebra::traits::Field;
 use longfellow_core::{LongfellowError, Result};
@@ -92,15 +92,20 @@ impl<F: Field> Dense<F> {
         let n1 = self.n1;
 
         if new_n0 * n1 >= 1024 {
-            (0..new_n0).into_par_iter().for_each(|i| {
-                let start = i * n1;
-                let mid = (i + new_n0) * n1;
-                for j in 0..n1 {
-                    let f0 = self.v[start + j];
-                    let f1 = self.v[mid + j];
-                    self.v[start + j] = affine_interpolation_conditional(f0, f1, r);
-                }
-            });
+            // Process rows in parallel, but we need to be careful about aliasing
+            // Since we're reading from the second half and writing to the first half,
+            // we can split the array
+            let (first_half, second_half) = self.v.split_at_mut(new_n0 * n1);
+            
+            first_half.par_chunks_mut(n1)
+                .zip(second_half.par_chunks(n1))
+                .for_each(|(row, other_row)| {
+                    for j in 0..n1 {
+                        let f0 = row[j];
+                        let f1 = other_row[j];
+                        row[j] = affine_interpolation_conditional(f0, f1, r);
+                    }
+                });
         } else {
             for i in 0..new_n0 {
                 for j in 0..n1 {

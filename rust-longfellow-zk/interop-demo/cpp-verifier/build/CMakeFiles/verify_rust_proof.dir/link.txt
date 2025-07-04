@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -Wextra -O3 -march=native CMakeFiles/verify_rust_proof.dir/verify_rust_proof.cpp.o -o verify_rust_proof  liblongfellow_verifier.a

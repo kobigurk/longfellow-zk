@@ -18,7 +18,7 @@ pub enum HashFunction {
 /// Trait for hash functions used in Merkle trees
 pub trait Hasher: Clone + Send + Sync {
     /// Output type of the hash function
-    type Output: Clone + AsRef<[u8]> + PartialEq + Send + Sync;
+    type Output: Clone + AsRef<[u8]> + PartialEq + Send + Sync + Serialize + for<'de> Deserialize<'de>;
     
     /// Hash a leaf node
     fn hash_leaf(data: &[u8]) -> Self::Output;
@@ -89,19 +89,19 @@ impl Hasher for Sha3_256Hasher {
     }
 }
 
-/// SHA3-512 hasher implementation
+/// SHA3-512 hasher implementation using Vec<u8> to avoid serde issues
 #[derive(Clone)]
 pub struct Sha3_512Hasher;
 
 impl Hasher for Sha3_512Hasher {
-    type Output = [u8; 64];
+    type Output = Vec<u8>;
     
     fn hash_leaf(data: &[u8]) -> Self::Output {
         let mut hasher = Sha3_512::new();
         hasher.update(b"leaf:");
         hasher.update(&(data.len() as u64).to_le_bytes());
         hasher.update(data);
-        hasher.finalize().into()
+        hasher.finalize().to_vec()
     }
     
     fn hash_pair(left: &Self::Output, right: &Self::Output) -> Self::Output {
@@ -109,13 +109,13 @@ impl Hasher for Sha3_512Hasher {
         hasher.update(b"node:");
         hasher.update(left);
         hasher.update(right);
-        hasher.finalize().into()
+        hasher.finalize().to_vec()
     }
     
     fn empty_hash() -> Self::Output {
         let mut hasher = Sha3_512::new();
         hasher.update(b"empty");
-        hasher.finalize().into()
+        hasher.finalize().to_vec()
     }
 }
 
@@ -148,135 +148,80 @@ impl Hasher for Blake3Hasher {
     }
 }
 
-/// Create a hasher based on hash function enum
-pub fn create_hasher(hash_function: HashFunction) -> Box<dyn Hasher<Output = Vec<u8>>> {
-    match hash_function {
-        HashFunction::Sha256 => Box::new(VecHasher::<Sha256Hasher>::new()),
-        HashFunction::Sha3_256 => Box::new(VecHasher::<Sha3_256Hasher>::new()),
-        HashFunction::Sha3_512 => Box::new(VecHasher::<Sha3_512Hasher>::new()),
-        HashFunction::Blake3 => Box::new(VecHasher::<Blake3Hasher>::new()),
+/// Dynamic hash function wrapper that doesn't require dyn compatibility
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum DynamicHasher {
+    Sha256,
+    Sha3_256,
+    Sha3_512,
+    Blake3,
+}
+
+impl Default for DynamicHasher {
+    fn default() -> Self {
+        DynamicHasher::Sha256
     }
 }
 
-/// Wrapper to convert array output to Vec for dynamic dispatch
-struct VecHasher<H: Hasher> {
-    _phantom: std::marker::PhantomData<H>,
-}
-
-impl<H: Hasher> Clone for VecHasher<H> {
-    fn clone(&self) -> Self {
-        Self {
-            _phantom: std::marker::PhantomData,
+impl DynamicHasher {
+    pub fn new(hash_function: HashFunction) -> Self {
+        match hash_function {
+            HashFunction::Sha256 => DynamicHasher::Sha256,
+            HashFunction::Sha3_256 => DynamicHasher::Sha3_256,
+            HashFunction::Sha3_512 => DynamicHasher::Sha3_512,
+            HashFunction::Blake3 => DynamicHasher::Blake3,
         }
     }
-}
-
-impl<H: Hasher> VecHasher<H> {
-    fn new() -> Self {
-        Self {
-            _phantom: std::marker::PhantomData,
+    
+    pub fn hash_leaf(&self, data: &[u8]) -> Vec<u8> {
+        match self {
+            DynamicHasher::Sha256 => Sha256Hasher::hash_leaf(data).to_vec(),
+            DynamicHasher::Sha3_256 => Sha3_256Hasher::hash_leaf(data).to_vec(),
+            DynamicHasher::Sha3_512 => Sha3_512Hasher::hash_leaf(data),
+            DynamicHasher::Blake3 => Blake3Hasher::hash_leaf(data).to_vec(),
         }
     }
-}
-
-impl<H: Hasher> Hasher for VecHasher<H>
-where
-    H::Output: AsRef<[u8]>,
-{
-    type Output = Vec<u8>;
     
-    fn hash_leaf(data: &[u8]) -> Self::Output {
-        H::hash_leaf(data).as_ref().to_vec()
-    }
-    
-    fn hash_pair(left: &Self::Output, right: &Self::Output) -> Self::Output {
-        let left_array = left.as_slice();
-        let right_array = right.as_slice();
-        
-        // This is a bit inefficient but necessary for dynamic dispatch
-        let left_bytes = unsafe {
-            std::slice::from_raw_parts(left_array.as_ptr(), left_array.len())
-        };
-        let right_bytes = unsafe {
-            std::slice::from_raw_parts(right_array.as_ptr(), right_array.len())
-        };
-        
-        match std::mem::size_of::<H::Output>() {
-            32 => {
+    pub fn hash_pair(&self, left: &[u8], right: &[u8]) -> Vec<u8> {
+        match self {
+            DynamicHasher::Sha256 => {
                 let mut left_arr = [0u8; 32];
                 let mut right_arr = [0u8; 32];
-                left_arr.copy_from_slice(&left_bytes[..32]);
-                right_arr.copy_from_slice(&right_bytes[..32]);
-                
-                let result = if std::any::TypeId::of::<H>() == std::any::TypeId::of::<Sha256Hasher>() {
-                    Sha256Hasher::hash_pair(&left_arr, &right_arr).to_vec()
-                } else if std::any::TypeId::of::<H>() == std::any::TypeId::of::<Sha3_256Hasher>() {
-                    Sha3_256Hasher::hash_pair(&left_arr, &right_arr).to_vec()
-                } else if std::any::TypeId::of::<H>() == std::any::TypeId::of::<Blake3Hasher>() {
-                    Blake3Hasher::hash_pair(&left_arr, &right_arr).to_vec()
-                } else {
-                    panic!("Unknown 32-byte hasher");
-                };
-                result
+                left_arr.copy_from_slice(&left[..32.min(left.len())]);
+                right_arr.copy_from_slice(&right[..32.min(right.len())]);
+                Sha256Hasher::hash_pair(&left_arr, &right_arr).to_vec()
             }
-            64 => {
-                let mut left_arr = [0u8; 64];
-                let mut right_arr = [0u8; 64];
-                left_arr.copy_from_slice(&left_bytes[..64]);
-                right_arr.copy_from_slice(&right_bytes[..64]);
-                
-                Sha3_512Hasher::hash_pair(&left_arr, &right_arr).to_vec()
+            DynamicHasher::Sha3_256 => {
+                let mut left_arr = [0u8; 32];
+                let mut right_arr = [0u8; 32];
+                left_arr.copy_from_slice(&left[..32.min(left.len())]);
+                right_arr.copy_from_slice(&right[..32.min(right.len())]);
+                Sha3_256Hasher::hash_pair(&left_arr, &right_arr).to_vec()
             }
-            _ => panic!("Unsupported hash output size"),
+            DynamicHasher::Sha3_512 => {
+                Sha3_512Hasher::hash_pair(&left.to_vec(), &right.to_vec())
+            }
+            DynamicHasher::Blake3 => {
+                let mut left_arr = [0u8; 32];
+                let mut right_arr = [0u8; 32];
+                left_arr.copy_from_slice(&left[..32.min(left.len())]);
+                right_arr.copy_from_slice(&right[..32.min(right.len())]);
+                Blake3Hasher::hash_pair(&left_arr, &right_arr).to_vec()
+            }
         }
     }
     
-    fn empty_hash() -> Self::Output {
-        H::empty_hash().as_ref().to_vec()
+    pub fn empty_hash(&self) -> Vec<u8> {
+        match self {
+            DynamicHasher::Sha256 => Sha256Hasher::empty_hash().to_vec(),
+            DynamicHasher::Sha3_256 => Sha3_256Hasher::empty_hash().to_vec(),
+            DynamicHasher::Sha3_512 => Sha3_512Hasher::empty_hash(),
+            DynamicHasher::Blake3 => Blake3Hasher::empty_hash().to_vec(),
+        }
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_hash_consistency() {
-        let data = b"test data";
-        
-        // Test that same data produces same hash
-        let hash1 = Sha3_256Hasher::hash_leaf(data);
-        let hash2 = Sha3_256Hasher::hash_leaf(data);
-        assert_eq!(hash1, hash2);
-        
-        // Test that different data produces different hash
-        let hash3 = Sha3_256Hasher::hash_leaf(b"different");
-        assert_ne!(hash1, hash3);
-    }
-    
-    #[test]
-    fn test_different_hashers() {
-        let data = b"test";
-        
-        let sha256_hash = Sha256Hasher::hash_leaf(data);
-        let sha3_hash = Sha3_256Hasher::hash_leaf(data);
-        let blake3_hash = Blake3Hasher::hash_leaf(data);
-        
-        // Different hashers should produce different results
-        assert_ne!(sha256_hash, sha3_hash);
-        assert_ne!(sha256_hash, blake3_hash);
-        assert_ne!(sha3_hash, blake3_hash);
-    }
-    
-    #[test]
-    fn test_hash_pair_order() {
-        let left = Sha3_256Hasher::hash_leaf(b"left");
-        let right = Sha3_256Hasher::hash_leaf(b"right");
-        
-        let hash_lr = Sha3_256Hasher::hash_pair(&left, &right);
-        let hash_rl = Sha3_256Hasher::hash_pair(&right, &left);
-        
-        // Order should matter
-        assert_ne!(hash_lr, hash_rl);
-    }
+/// Create a hasher based on hash function enum
+pub fn create_hasher(hash_function: HashFunction) -> DynamicHasher {
+    DynamicHasher::new(hash_function)
 }

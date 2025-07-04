@@ -189,21 +189,21 @@ impl ClaimExtractor for VerifiableCredential {
         Ok(claims)
     }
     
-    fn get_claim(&self, path: &str) -> Option<&Value> {
+    fn get_claim(&self, path: &str) -> Option<Value> {
         if path.starts_with("credentialSubject.") {
             let key = &path["credentialSubject.".len()..];
             if key == "id" {
-                self.credential_subject.id.as_ref().map(|s| &Value::Text(s.clone()))
+                self.credential_subject.id.as_ref().map(|s| Value::Text(s.clone()))
             } else {
-                self.credential_subject.properties.get(key)
+                self.credential_subject.properties.get(key).cloned()
             }
         } else {
             match path {
-                "id" => self.id.as_ref().map(|s| &Value::Text(s.clone())),
-                "issuer" => Some(&Value::Text(self.issuer_id().to_string())),
-                "issuanceDate" => Some(&Value::Text(self.issuance_date.clone())),
-                "expirationDate" => self.expiration_date.as_ref().map(|s| &Value::Text(s.clone())),
-                _ => self.additional.get(path),
+                "id" => self.id.as_ref().map(|s| Value::Text(s.clone())),
+                "issuer" => Some(Value::Text(self.issuer_id().to_string())),
+                "issuanceDate" => Some(Value::Text(self.issuance_date.clone())),
+                "expirationDate" => self.expiration_date.as_ref().map(|s| Value::Text(s.clone())),
+                _ => self.additional.get(path).cloned(),
             }
         }
     }

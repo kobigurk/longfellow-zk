@@ -14,6 +14,8 @@ members = [
     "longfellow-zk",
     "longfellow-circuits",
     "longfellow-equivalence-tests",
+    "interop-demo",
+    "full-prover",
 ]
 resolver = "2"
 
@@ -41,7 +43,7 @@ flate2 = "1.0"
 # Cryptography
 sha2 = "0.10"
 sha3 = "0.10"
-p256 = { version = "0.13", features = ["ecdsa"] }
+p256 = { version = "0.13", features = ["ecdsa", "expose-field"] }
 rand = "0.8"
 rand_chacha = "0.3"
 zeroize = { version = "1.7", features = ["derive"] }

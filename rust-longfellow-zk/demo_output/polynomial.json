@@ -1,0 +1,28 @@
+{
+  "proof_type": "polynomial",
+  "version": "1.0.0",
+  "security_bits": 128,
+  "field_modulus": "6100000000000000000000000000000001000000000000000000000000000000",
+  "public_inputs": {
+    "evaluation_point": "82bda13c2a095e4f82bda187bfaeb49c",
+    "degree": "5"
+  },
+  "proof_data": {
+    "type": "Polynomial",
+    "coefficients": [
+      "470b615819cf9e2f470b611fa6f5055e",
+      "b8de501f9504af27b8de50c55f3f5ace",
+      "29b240e6103abf1f29b2406b1999ae3e",
+      "9b8530ad8c5fcf179b853011d3e202af",
+      "0c5920740895df0f0c5920b78c3c571f",
+      "7d2c103b84caef077d2c105d4686ab8f"
+    ],
+    "evaluation_point": "82bda13c2a095e4f82bda187bfaeb49c",
+    "evaluation_result": "aee13149c0d3c353ace131c3eda4142e"
+  },
+  "metadata": {
+    "generated_at": 1751661579,
+    "prover_version": "1.0.0",
+    "generation_time_ms": 0.0
+  }
+}

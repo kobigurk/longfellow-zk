@@ -4,7 +4,6 @@
 /// x^128 + x^7 + x^2 + x + 1
 
 use longfellow_core::{LongfellowError, Result};
-use serde::{Deserialize, Serialize};
 use std::fmt::{self, Debug, Display};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
@@ -168,7 +167,7 @@ impl Gf2_128 {
         let mut g1 = Self::ONE;
         let mut g2 = Self::ZERO;
 
-        while !u.is_zero().into() {
+        while !bool::from(u.is_zero()) {
             // Find the degree (position of highest bit)
             let deg_u = u.degree();
             let deg_v = v.degree();

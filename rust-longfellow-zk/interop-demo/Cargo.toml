@@ -1,0 +1,53 @@
+[package]
+name = "longfellow-interop-demo"
+version = "0.1.0"
+edition = "2021"
+authors = ["Longfellow ZK Team"]
+
+[[bin]]
+name = "rust_prover"
+path = "src/rust_prover.rs"
+
+[[bin]]
+name = "proof_format_converter"
+path = "src/proof_format_converter.rs"
+
+[[bin]]
+name = "minimal_prover"
+path = "src/minimal_prover.rs"
+
+[[bin]]
+name = "super_minimal"
+path = "src/super_minimal.rs"
+
+[[bin]]
+name = "complete_demo"
+path = "src/complete_demo.rs"
+
+[[bin]]
+name = "comparative_benchmark"
+path = "src/comparative_benchmark.rs"
+
+[dependencies]
+longfellow-core = { path = "../longfellow-core" }
+longfellow-algebra = { path = "../longfellow-algebra" }
+# longfellow-arrays = { path = "../longfellow-arrays" }
+# longfellow-random = { path = "../longfellow-random" }
+# longfellow-merkle = { path = "../longfellow-merkle" }
+# longfellow-sumcheck = { path = "../longfellow-sumcheck" }
+# longfellow-ligero = { path = "../longfellow-ligero" }
+# longfellow-zk = { path = "../longfellow-zk" }
+# longfellow-circuits = { path = "../longfellow-circuits" }
+# longfellow-cbor = { path = "../longfellow-cbor" }
+longfellow-util = { path = "../longfellow-util" }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+bincode = { workspace = true }
+hex = { workspace = true }
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
+log = { workspace = true }
+env_logger = { workspace = true }
+sha2 = { workspace = true }
+chrono = { workspace = true }

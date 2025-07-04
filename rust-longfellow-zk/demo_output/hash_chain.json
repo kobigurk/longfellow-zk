@@ -1,0 +1,32 @@
+{
+  "proof_type": "hash_chain",
+  "version": "1.0.0",
+  "security_bits": 128,
+  "field_modulus": "6100000000000000000000000000000001000000000000000000000000000000",
+  "public_inputs": {
+    "initial_value": "6c6f6e6766656c6c6f775f7a6b5f64656d6f",
+    "iterations": "1000"
+  },
+  "proof_data": {
+    "type": "HashChain",
+    "final_hash": "fa5a64ba424ad522c26df23cc31432eacab4ee4890558a530970c0bbf17c58d8",
+    "intermediate_hashes": [
+      "cd328741ce5c6e6672a6fee2a251a8b9a2ac25909f7e1d6d76182b1b5b9ff80d",
+      "180671e580c456310e89a46a57f0e4914c78e210d40f33e7c099a4d925ad5991",
+      "052ff6ca6e846f1dda866a331706c4559387316e2698ff5281e0afbeb0c9def7",
+      "28520eb77e43e2004c0a15d4a0d6cc120d3897b491dfdf1968ecab2771be3f7e",
+      "c761c67221979fcb3ad523c22e0b95d40c58a647bf7d18ae5336a3610b50e280",
+      "7354639489e02ec66e2384493c400e64c8f213579ffc8dce38aa0a3e4d4fa46f",
+      "83a2119617ccf5e677a4a196e32c957d1ff3f0fdaeb5ca428687ed833ba8f5fd",
+      "f7bc21837ba87260727e2772a70e88e07eb8f97d579be4949a4c9f602fb08616",
+      "bd627c2c21c669af017357b1d436ec6a6c9c8520c6bc3646f2ced96f25a55b6b",
+      "fa5a64ba424ad522c26df23cc31432eacab4ee4890558a530970c0bbf17c58d8"
+    ],
+    "iterations": 1000
+  },
+  "metadata": {
+    "generated_at": 1751661579,
+    "prover_version": "1.0.0",
+    "generation_time_ms": 0.0
+  }
+}

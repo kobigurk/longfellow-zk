@@ -1,0 +1,27 @@
+{
+  "proof_type": "gf2k",
+  "version": "1.0.0",
+  "timestamp": 1751658374,
+  "security_bits": 128,
+  "proof_data": {
+    "type": "Gf2k",
+    "operation": "arithmetic",
+    "inputs": [
+      "01010101010101010101010101010101",
+      "02020202020202020202020202020202"
+    ],
+    "result": "02000200020002000200020002000200",
+    "proof": [
+      "03030303030303030303030303030303",
+      "02000200020002000200020002000200",
+      "871e02666c924f94e52053f0efde8e2b"
+    ]
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "GF(2^128)",
+    "curve": null,
+    "hash_function": null,
+    "computation_time_ms": 0
+  }
+}

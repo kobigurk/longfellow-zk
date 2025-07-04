@@ -1,0 +1,74 @@
+{
+  "proof_type": "combined",
+  "version": "1.0.0",
+  "timestamp": 1751658374,
+  "security_bits": 256,
+  "proof_data": {
+    "type": "Combined",
+    "sub_proofs": [
+      {
+        "type": "FieldArithmetic",
+        "statement": "(a + b) * c = d",
+        "public_inputs": {
+          "a": "7ae406ff22efd30e620bff6f05201f",
+          "d": "b9d4ec9347ad1af009ff8c2a51cadc07",
+          "c": "11260128dbcf78023bd7ffec00e004",
+          "b": "aa8409cfceee791432aefe7f07202b"
+        },
+        "witness": [
+          "7ae406ff22efd30e620bff6f05201f",
+          "aa8409cfceee791432aefe7f07202b",
+          "11260128dbcf78023bd7ffec00e004",
+          "286910cef10d4e2391b9fde90ca04a",
+          "b9d4ec9347ad1af009ff8c2a51cadc07"
+        ],
+        "constraints_satisfied": true
+      },
+      {
+        "type": "PolynomialCommitment",
+        "polynomial_degree": 3,
+        "commitment": "43c8b137a568022fd277ebaf6422c0783725354f8bd5ab2a9cf2376736887f19",
+        "evaluation_point": "1aa4015fcbef8703c2c5ff4f012007",
+        "evaluation_result": "f6edca99e49dfed6ca0c783c14868e3a",
+        "proof": {
+          "coefficients": [
+            "002a00bafa8f5a002dfaff260060",
+            "02540077f5efb4005af4ff47002001",
+            "057e0034f04f0f0187eeff6800e001",
+            "08a800f1eaaf6901b4e8ff8900a002"
+          ],
+          "merkle_root": "43c8b137a568022fd277ebaf6422c0783725354f8bd5ab2a9cf2376736887f19",
+          "opening_proof": [
+            "000000000000000002000000000000002000000000000000100fff8c30cbbc9b843677c126f6cada535682742172ef887764ffee481ce5da2000000000000000e319bc07485af9c5194e236cfcdbf8ce44556927fd9f90578e90bb1ec71a45d0",
+            "010000000000000002000000000000002000000000000000960b2503ea43559b6c946798bcd301b7a6b976a7eee917f3ec0fa9518bb4b04d2000000000000000e319bc07485af9c5194e236cfcdbf8ce44556927fd9f90578e90bb1ec71a45d0",
+            "020000000000000002000000000000002000000000000000c85efd73a211e9de1a14fd65c775b3d1f454c2104d200d31373aadbd5d22aaee20000000000000004c06a90ef1b5d36be73347c235c9152b6695f44a641ec2c35be56bb1e9957ca4",
+            "030000000000000002000000000000002000000000000000062b11b68eda8debfd208994bc73e4681ed0c4fa2465659926f4f7843a6ec09d20000000000000004c06a90ef1b5d36be73347c235c9152b6695f44a641ec2c35be56bb1e9957ca4"
+          ]
+        }
+      },
+      {
+        "type": "MerkleProof",
+        "merkle_root": "3d0bac7b60fd70b1cb67f32c249eafc73f3374704d609acb8e6bbd97d0b69f15",
+        "leaf_index": 42,
+        "leaf_value": "6c6561665f3432",
+        "siblings": [
+          "e0990d63db0c00d19284c3cb63361352d4528f3d2771c0c8d968396fe6a6aeb9",
+          "b2f914db1c87aef27e446fd0951cf66ce0ee783c8fcb83cb2b2aee4ed104affe",
+          "62fd2e82b347f84496abf13d055587d48b98f1963b2046348e73f8e6fb0e9565",
+          "6e3d813724215cb7ba53ad0f4878e1f4f5600d88f4822a0cde409d67c050b213",
+          "5129de7201b4fe0387669f6f61e5a883bb89e5e99573663f61af386c4d15f51c",
+          "b604af2e15ddffdd077ba07b70d882a647ea2eb59b8e7ece1600ad6f5db73eea"
+        ],
+        "hash_function": "BLAKE3"
+      }
+    ],
+    "aggregated": true
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "Multiple",
+    "curve": "P-256",
+    "hash_function": "SHA3-256/BLAKE3",
+    "computation_time_ms": 0
+  }
+}

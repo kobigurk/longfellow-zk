@@ -233,30 +233,30 @@ pub fn create_instance<F: Field>(
 /// Build a circuit for a given statement
 fn build_circuit_for_statement<F: Field>(
     statement: &Statement,
-    witness: &ZkWitness,
+    _witness: &ZkWitness,
 ) -> Result<ZkCircuit<F>> {
-    let mut circuit = ZkCircuit::new(1000); // Placeholder size
+    let circuit = ZkCircuit::new(1000); // Placeholder size
     
     // Add constraints based on predicates
     for predicate in &statement.predicates {
         match predicate {
-            Predicate::FieldEquals { field, value } => {
+            Predicate::FieldEquals { field: _, value: _ } => {
                 // Add constraints for field equality
                 // This would involve parsing, hashing, and comparison circuits
             }
-            Predicate::FieldExists { field } => {
+            Predicate::FieldExists { field: _ } => {
                 // Add constraints for field existence
             }
-            Predicate::FieldGreaterThan { field, value } => {
+            Predicate::FieldGreaterThan { field: _, value: _ } => {
                 // Add comparison constraints
             }
-            Predicate::AgeOver { years } => {
+            Predicate::AgeOver { years: _ } => {
                 // Add date arithmetic constraints
             }
             Predicate::ValidSignature => {
                 // Add signature verification constraints
             }
-            Predicate::ValidIssuer { issuer } => {
+            Predicate::ValidIssuer { issuer: _ } => {
                 // Add issuer validation constraints
             }
             Predicate::NotExpired => {

@@ -280,7 +280,7 @@ impl ClaimExtractor for Document {
         Ok(claims)
     }
     
-    fn get_claim(&self, path: &str) -> Option<&Value> {
+    fn get_claim(&self, path: &str) -> Option<Value> {
         let parts: Vec<&str> = path.split('.').collect();
         if parts.len() < 2 {
             return None;
@@ -293,7 +293,7 @@ impl ClaimExtractor for Document {
             .and_then(|items| {
                 items.iter()
                     .find(|item| item.element_identifier == element_id)
-                    .map(|item| &item.element_value)
+                    .map(|item| item.element_value.clone())
             })
     }
 }

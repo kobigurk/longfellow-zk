@@ -14,6 +14,7 @@ thiserror = { workspace = true }
 serde = { workspace = true }
 rayon = { workspace = true }
 itertools = "0.12"
+rand = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

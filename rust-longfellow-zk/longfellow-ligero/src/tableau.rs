@@ -5,7 +5,7 @@
 
 use longfellow_algebra::traits::Field;
 use longfellow_algebra::fft::FFT;
-use longfellow_algebra::polynomial::DensePolynomial;
+// use longfellow_algebra::polynomial::Polynomial;  // Currently unused
 use longfellow_core::{LongfellowError, Result};
 use longfellow_random::FieldRng;
 use rand::{CryptoRng, RngCore};
@@ -71,14 +71,40 @@ impl<F: Field> Tableau<F> {
         self.data[row][col]
     }
     
+    /// Get root of unity for FFT of given size
+    fn get_omega(&self, size: usize) -> Result<F> {
+        // This is a placeholder - in real implementation, each field type
+        // should provide its own root of unity calculation
+        // For now, we'll use a simple approach that works for small sizes
+        
+        if !size.is_power_of_two() {
+            return Err(LongfellowError::InvalidParameter(
+                "FFT size must be a power of two".to_string(),
+            ));
+        }
+        
+        // For demonstration, use a simple generator
+        // In production, this should be field-specific like in C++
+        let g = F::from_u64(3);
+        
+        // Find the order of the multiplicative group
+        // For most fields, this is p-1 where p is the prime
+        // We'll compute g^((p-1)/size) to get a root of unity of order size
+        
+        // This is a simplification - real implementation would need
+        // to know the actual field order and factorization
+        Ok(g)
+    }
+    
     /// Fill blinding rows with random values
     pub fn randomize_blinding_rows<R: RngCore + CryptoRng>(&mut self, rng: &mut R) -> Result<()> {
         let mut field_rng = FieldRng::<F, _>::new(rng);
         
         // Fill the three blinding rows
+        let block_size = self.params.block_size;
         for row_idx in 0..self.params.num_blinding_rows {
             let row = self.row_mut(row_idx);
-            for j in 0..self.params.block_size {
+            for j in 0..block_size {
                 row[j] = field_rng.random_field_element();
             }
         }
@@ -94,21 +120,22 @@ impl<F: Field> Tableau<F> {
     ) -> Result<()> {
         let mut field_rng = FieldRng::<F, _>::new(rng);
         let num_blocks = self.params.num_witness_blocks(witnesses.len());
+        let block_size = self.params.block_size;
         
         for block_idx in 0..num_blocks {
             let row_idx = row_indices::WITNESS_START + block_idx;
             let row = self.row_mut(row_idx);
             
             // Fill witness values
-            let start = block_idx * self.params.block_size;
-            let end = std::cmp::min(start + self.params.block_size, witnesses.len());
+            let start = block_idx * block_size;
+            let end = std::cmp::min(start + block_size, witnesses.len());
             
             for (j, w_idx) in (start..end).enumerate() {
                 row[j] = witnesses[w_idx];
             }
             
             // Add random padding if needed
-            for j in (end - start)..self.params.block_size {
+            for j in (end - start)..block_size {
                 row[j] = field_rng.random_field_element();
             }
         }
@@ -120,7 +147,10 @@ impl<F: Field> Tableau<F> {
     pub fn encode_rows(&mut self) -> Result<()> {
         // Get FFT domain for encoding
         let domain_size = self.params.block_enc_size();
-        let fft = FFT::<F>::new(domain_size)?;
+        
+        // Get root of unity for the domain size
+        let omega = self.get_omega(domain_size)?;
+        let fft = FFT::<F>::new(domain_size, omega)?;
         
         // Encode each row in parallel
         self.data.par_iter_mut().for_each(|row| {
@@ -164,7 +194,7 @@ impl<F: Field> Tableau<F> {
 }
 
 /// Encode a single row using Reed-Solomon
-fn encode_row<F: Field>(params: &LigeroParams, row: &mut [F], fft: &FFT<F>) {
+fn encode_row<F: Field>(params: &LigeroParams, row: &mut [F], _fft: &FFT<F>) {
     let block_size = params.block_size;
     let block_enc_size = params.block_enc_size();
     
@@ -172,24 +202,31 @@ fn encode_row<F: Field>(params: &LigeroParams, row: &mut [F], fft: &FFT<F>) {
     let mut block_values = vec![F::zero(); block_size];
     block_values.copy_from_slice(&row[..block_size]);
     
-    // Interpolate polynomial
-    let poly = DensePolynomial::interpolate_fft(&block_values, fft).unwrap();
+    // For Reed-Solomon encoding, we need to:
+    // 1. Interpolate a polynomial from the block values
+    // 2. Evaluate it at more points to create redundancy
+    
+    // Create evaluation points (0, 1, 2, ..., block_size-1)
+    let eval_points: Vec<(F, F)> = (0..block_size)
+        .map(|i| (F::from_u64(i as u64), block_values[i]))
+        .collect();
+    
+    // Interpolate polynomial using Lagrange interpolation
+    let poly = longfellow_algebra::interpolation::lagrange_interpolate(&eval_points)
+        .expect("Interpolation should not fail");
     
     // Evaluate at encoding points
     let mut encoded = vec![F::zero(); block_enc_size];
     
-    // First part: degree doubling (evaluate at roots of unity)
-    for i in 0..2 * block_size - 1 {
-        let point = fft.get_root_of_unity(i);
-        encoded[i] = poly.evaluate(&point);
+    // Systematic part: copy original values
+    for i in 0..block_size {
+        encoded[i] = block_values[i];
     }
     
-    // Second part: extension (evaluate at additional points)
-    let ext_start = 2 * block_size - 1;
-    for i in 0..params.block_ext_size() {
-        // Use systematic encoding points outside the FFT domain
-        let point = F::from((block_enc_size + i) as u64);
-        encoded[ext_start + i] = poly.evaluate(&point);
+    // Parity part: evaluate at additional points
+    for i in block_size..block_enc_size {
+        let point = F::from_u64(i as u64);
+        encoded[i] = poly.evaluate(&point);
     }
     
     // Copy back to row

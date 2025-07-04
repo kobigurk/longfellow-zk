@@ -1,0 +1,27 @@
+{
+  "proof_type": "field_arithmetic",
+  "version": "1.0.0",
+  "security_bits": 128,
+  "field_modulus": "6100000000000000000000000000000001000000000000000000000000000000",
+  "public_inputs": {
+    "b": "69f512ccc7c2ec8669f512feab7a668a",
+    "a": "594fa75db109584d594fa7c88aa72a92",
+    "c": "2e43d2e7b6782d672e43d29592c1b74b"
+  },
+  "proof_data": {
+    "type": "FieldArithmetic",
+    "result": "ae5553a55235e3d5ac5553bbd07e20a6",
+    "intermediate_values": [
+      "7f1281be9b8cb56e7f1281243ecd685a",
+      "ae5553a55235e3d5ac5553bbd07e20a6"
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_at": 1751669541,
+    "security_bits": 128,
+    "proof_system": "longfellow",
+    "field_name": "Fp128_field_arithmetic"
+  },
+  "verification_key": null
+}

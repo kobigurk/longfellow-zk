@@ -8,13 +8,11 @@ use longfellow_algebra::traits::Field;
 use p256::{
     AffinePoint, ProjectivePoint, Scalar,
     elliptic_curve::{
-        group::{GroupEncoding, Group},
+        group::Group,
         sec1::{FromEncodedPoint, ToEncodedPoint},
-        Field as ECField,
     },
 };
 use serde::{Deserialize, Serialize};
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 
 pub mod ecdsa;
 pub mod circuit;
@@ -26,11 +24,14 @@ pub struct FieldElement(p256::FieldElement);
 impl FieldElement {
     /// Create from bytes (big-endian)
     pub fn from_bytes(bytes: &[u8; 32]) -> Result<Self> {
-        p256::FieldElement::from_bytes(bytes.into())
-            .map(FieldElement)
-            .ok_or_else(|| LongfellowError::InvalidParameter(
+        let ct_option = p256::FieldElement::from_bytes(bytes.into());
+        if ct_option.is_some().into() {
+            Ok(FieldElement(ct_option.unwrap()))
+        } else {
+            Err(LongfellowError::InvalidParameter(
                 "Invalid field element bytes".to_string()
             ))
+        }
     }
     
     /// Convert to bytes (big-endian)
@@ -86,7 +87,13 @@ pub struct ScalarElement(Scalar);
 impl ScalarElement {
     /// Create from bytes (big-endian)
     pub fn from_bytes(bytes: &[u8; 32]) -> Result<Self> {
-        Option::from(Scalar::from_bytes(bytes.into()))
+        use p256::elliptic_curve::ff::PrimeField;
+        
+        // p256 uses little-endian internally, so we need to reverse
+        let mut le_bytes = *bytes;
+        le_bytes.reverse();
+        
+        Option::from(Scalar::from_repr(le_bytes.into()))
             .map(ScalarElement)
             .ok_or_else(|| LongfellowError::InvalidParameter(
                 "Invalid scalar bytes".to_string()
@@ -95,12 +102,27 @@ impl ScalarElement {
     
     /// Create from bytes with reduction
     pub fn from_bytes_reduced(bytes: &[u8; 32]) -> Self {
-        ScalarElement(Scalar::from_bytes_reduced(bytes.into()))
+        use p256::elliptic_curve::ops::Reduce;
+        use p256::U256;
+        
+        // Create U256 from big-endian bytes
+        let mut le_bytes = [0u8; 32];
+        for i in 0..32 {
+            le_bytes[i] = bytes[31 - i];
+        }
+        
+        let uint = U256::from_le_slice(&le_bytes);
+        ScalarElement(Scalar::reduce(uint))
     }
     
     /// Convert to bytes (big-endian)
     pub fn to_bytes(&self) -> [u8; 32] {
-        self.0.to_bytes().into()
+        use p256::elliptic_curve::ff::PrimeField;
+        
+        let le_bytes: [u8; 32] = self.0.to_repr().into();
+        let mut be_bytes = le_bytes;
+        be_bytes.reverse();
+        be_bytes
     }
     
     /// Get zero scalar
@@ -131,6 +153,27 @@ impl ScalarElement {
     /// Invert a scalar
     pub fn invert(&self) -> Option<Self> {
         self.0.invert().map(ScalarElement).into()
+    }
+}
+
+impl Serialize for ScalarElement {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let bytes = self.to_bytes();
+        bytes.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for ScalarElement {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let bytes: [u8; 32] = Deserialize::deserialize(deserializer)?;
+        ScalarElement::from_bytes(&bytes)
+            .map_err(|_| serde::de::Error::custom("Invalid scalar bytes"))
     }
 }
 
@@ -198,10 +241,13 @@ impl Point {
         let y2 = self.y.square();
         let x3 = self.x.square().mul(&self.x);
         let ax = self.x.mul(&FieldElement(p256::FieldElement::from(3u64).neg()));
-        let b = FieldElement(p256::FieldElement::from_bytes(
-            &hex::decode("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b")
-                .unwrap().try_into().unwrap()
-        ).unwrap());
+        let b_bytes = [
+            0x5a, 0xc6, 0x35, 0xd8, 0xaa, 0x3a, 0x93, 0xe7,
+            0xb3, 0xeb, 0xbd, 0x55, 0x76, 0x98, 0x86, 0xbc,
+            0x65, 0x1d, 0x06, 0xb0, 0xcc, 0x53, 0xb0, 0xf6,
+            0x3b, 0xce, 0x3c, 0x3e, 0x27, 0xd2, 0x60, 0x4b,
+        ];
+        let b = FieldElement::from_bytes(&b_bytes).unwrap();
         
         let rhs = x3.add(&ax).add(&b);
         y2 == rhs
@@ -219,7 +265,7 @@ impl Point {
             );
             
             Option::from(AffinePoint::from_encoded_point(&encoded))
-                .map(|a| a.into())
+                .map(|a: AffinePoint| a.into())
                 .unwrap_or(ProjectivePoint::IDENTITY)
         }
     }
@@ -322,19 +368,28 @@ impl Point {
 /// Convert field element to algebra field trait
 pub fn field_elem_to_algebra<F: Field>(elem: &FieldElement) -> Result<F> {
     let bytes = elem.to_bytes();
-    F::from_bytes_be(&bytes)
+    // Convert big-endian to little-endian
+    let mut le_bytes = bytes;
+    le_bytes.reverse();
+    F::from_bytes_le(&le_bytes)
 }
 
 /// Convert algebra field to field element
 pub fn algebra_to_field_elem<F: Field>(elem: &F) -> Result<FieldElement> {
-    let bytes = elem.to_bytes_be();
-    if bytes.len() < 32 {
-        let mut padded = [0u8; 32];
-        padded[32 - bytes.len()..].copy_from_slice(&bytes);
-        FieldElement::from_bytes(&padded)
-    } else {
-        FieldElement::from_bytes(&bytes[..32].try_into().unwrap())
+    let le_bytes = elem.to_bytes_le();
+    if le_bytes.len() > 32 {
+        return Err(LongfellowError::InvalidParameter(
+            "Field element too large".to_string()
+        ));
     }
+    
+    // Convert little-endian to big-endian and pad
+    let mut be_bytes = [0u8; 32];
+    for (i, &byte) in le_bytes.iter().enumerate() {
+        be_bytes[31 - i] = byte;
+    }
+    
+    FieldElement::from_bytes(&be_bytes)
 }
 
 #[cfg(test)]

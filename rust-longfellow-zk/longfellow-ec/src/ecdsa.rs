@@ -1,6 +1,6 @@
 /// ECDSA signature operations for P-256
 
-use crate::{Point, ScalarElement, FieldElement};
+use crate::{Point, ScalarElement};
 use longfellow_core::{LongfellowError, Result};
 use p256::ecdsa::{signature::Verifier, Signature, VerifyingKey};
 use serde::{Deserialize, Serialize};
@@ -28,16 +28,22 @@ impl EcdsaSignature {
         
         let (r_bytes, s_bytes) = sig.split_bytes();
         
+        // Convert GenericArray to [u8; 32]
+        let mut r_arr = [0u8; 32];
+        let mut s_arr = [0u8; 32];
+        r_arr.copy_from_slice(&r_bytes);
+        s_arr.copy_from_slice(&s_bytes);
+        
         Ok(Self {
-            r: ScalarElement::from_bytes(&r_bytes)?,
-            s: ScalarElement::from_bytes(&s_bytes)?,
+            r: ScalarElement::from_bytes(&r_arr)?,
+            s: ScalarElement::from_bytes(&s_arr)?,
         })
     }
     
     /// Encode to DER
     pub fn to_der(&self) -> Vec<u8> {
         let sig = Signature::from_scalars(self.r.to_bytes(), self.s.to_bytes()).unwrap();
-        sig.to_der().to_vec()
+        sig.to_der().as_bytes().to_vec()
     }
     
     /// Parse from fixed-size encoding (64 bytes)

@@ -29,6 +29,12 @@ pub enum LongfellowError {
     #[error("Compression error: {0}")]
     CompressionError(String),
     
+    #[error("Proof error: {0}")]
+    ProofError(String),
+    
+    #[error("Unsupported operation: {0}")]
+    UnsupportedOperation(String),
+    
     #[error("Other error: {0}")]
     Other(String),
 }

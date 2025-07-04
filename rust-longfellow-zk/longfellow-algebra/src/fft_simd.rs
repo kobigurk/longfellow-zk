@@ -4,8 +4,6 @@
 
 use crate::traits::Field;
 
-#[cfg(target_arch = "x86_64")]
-use std::arch::x86_64::*;
 
 /// SIMD butterfly operation for 4 field elements at once using AVX2
 #[cfg(all(target_arch = "x86_64", target_feature = "avx2"))]
@@ -111,6 +109,7 @@ fn bit_reverse_simd<T: Copy>(data: &mut [T]) {
 }
 
 #[inline(always)]
+#[allow(dead_code)]
 fn bit_reverse_index(n: usize, bits: usize) -> usize {
     n.reverse_bits() >> (usize::BITS as usize - bits)
 }

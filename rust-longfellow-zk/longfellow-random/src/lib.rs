@@ -1,7 +1,6 @@
 /// Random number generation and transcript handling for zero-knowledge proofs
 
 use longfellow_algebra::traits::Field;
-use longfellow_core::Result;
 use rand::{CryptoRng, RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use sha3::{Digest, Sha3_256};
@@ -68,7 +67,8 @@ impl Transcript {
                 // Fallback: use rejection sampling
                 let mut rng = ChaCha20Rng::from_seed(hash.into());
                 loop {
-                    let bytes = rng.gen::<[u8; 32]>();
+                    let mut bytes = [0u8; 32];
+                    rng.fill_bytes(&mut bytes);
                     if let Ok(elem) = F::from_bytes_le(&bytes) {
                         return elem;
                     }
@@ -160,7 +160,7 @@ impl<F: Field> PseudoRandomFunction<F> {
         hasher.update(input);
         
         let hash = hasher.finalize();
-        let mut rng = ChaCha20Rng::from_seed(hash.into());
+        let rng = ChaCha20Rng::from_seed(hash.into());
         
         FieldRng::<F, _>::new(rng).random_field_element()
     }
@@ -222,7 +222,7 @@ pub fn random_oracle<F: Field>(domain: &[u8], input: &[u8]) -> F {
     hasher.update(input);
     
     let hash = hasher.finalize();
-    let mut rng = ChaCha20Rng::from_seed(hash.into());
+    let rng = ChaCha20Rng::from_seed(hash.into());
     
     FieldRng::<F, _>::new(rng).random_field_element()
 }

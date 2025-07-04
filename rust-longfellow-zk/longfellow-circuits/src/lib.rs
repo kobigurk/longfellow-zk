@@ -11,7 +11,7 @@ pub mod boolean;
 
 use longfellow_algebra::traits::Field;
 use longfellow_core::{LongfellowError, Result};
-use longfellow_sumcheck::circuit::{Circuit as SumcheckCircuit, Layer, GateType};
+use longfellow_sumcheck::circuit::{Circuit as SumcheckCircuit, Layer};
 use longfellow_ligero::ConstraintSystem;
 
 /// Circuit builder trait
@@ -105,7 +105,8 @@ impl<F: Field> CircuitBuilder<F> for StandardCircuit<F> {
                     vec![(var, F::one()), (temp, -F::one())],
                     F::one(),
                 );
-                self.constraints.add_quadratic_constraint(var, temp, self.alloc_var());
+                let result_var = self.alloc_var();
+                self.constraints.add_quadratic_constraint(var, temp, result_var);
             }
             Constraint::Range { var, bits } => {
                 // Decompose into bits
@@ -119,7 +120,7 @@ impl<F: Field> CircuitBuilder<F> for StandardCircuit<F> {
                 // Sum of bits * 2^i = var
                 let mut coeffs = vec![];
                 for (i, &bit) in bit_vars.iter().enumerate() {
-                    coeffs.push((bit, F::from(1u64 << i)));
+                    coeffs.push((bit, F::from_u64(1u64 << i)));
                 }
                 coeffs.push((var, -F::one()));
                 
@@ -151,7 +152,7 @@ pub struct LayeredCircuit<F: Field> {
     /// Sumcheck circuit
     pub circuit: SumcheckCircuit<F>,
     /// Variable allocation counter
-    next_var: usize,
+    _next_var: usize,
 }
 
 impl<F: Field> LayeredCircuit<F> {
@@ -159,7 +160,7 @@ impl<F: Field> LayeredCircuit<F> {
     pub fn new() -> Self {
         Self {
             circuit: SumcheckCircuit::new(),
-            next_var: 0,
+            _next_var: 0,
         }
     }
     

@@ -220,7 +220,7 @@ pub trait ClaimExtractor {
     fn extract_claims(&self) -> Result<HashMap<String, Value>>;
     
     /// Get specific claim by path (e.g., "address.street")
-    fn get_claim(&self, path: &str) -> Option<&Value>;
+    fn get_claim(&self, path: &str) -> Option<Value>;
 }
 
 #[cfg(test)]

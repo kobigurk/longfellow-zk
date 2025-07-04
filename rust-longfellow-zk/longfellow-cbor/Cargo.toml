@@ -11,6 +11,7 @@ longfellow-algebra = { path = "../longfellow-algebra" }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_cbor = "0.11"
+serde_json = "1.0"
 ciborium = "0.2"
 base64 = "0.21"
 

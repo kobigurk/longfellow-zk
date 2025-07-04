@@ -1,4 +1,4 @@
-use crate::polynomial::{Polynomial, PolynomialInBasis};
+use crate::polynomial::Polynomial;
 use crate::traits::Field;
 use longfellow_core::{LongfellowError, Result};
 

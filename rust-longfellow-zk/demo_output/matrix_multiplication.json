@@ -1,0 +1,33 @@
+{
+  "proof_type": "matrix_multiplication",
+  "version": "1.0.0",
+  "security_bits": 128,
+  "field_modulus": "6100000000000000000000000000000001000000000000000000000000000000",
+  "public_inputs": {
+    "matrix_size": "3"
+  },
+  "proof_data": {
+    "type": "MatrixMultiplication",
+    "result_trace": [
+      "7e59929f0a15eeca7c599266c5529513",
+      "b5bd4cf669ca89e7b3bd4c6d8a017b03",
+      "de21074ac98f2504dc21076f4f0061f3",
+      "c41e9834ea047815c41e98cfa9a4841d",
+      "614605294a6afc895f4605fde1ef01d7",
+      "3d6e7214aaff80fe3b6e721e1acb7f90",
+      "efe39dcac9f40160ede39d3b8ee67327",
+      "4ecfbd532a2a6f2c4ccfbd83393e89aa",
+      "8fbaddde8a6fdcf88bbaddcee4959e2d"
+    ],
+    "dimensions": [
+      3,
+      3,
+      3
+    ]
+  },
+  "metadata": {
+    "generated_at": 1751661579,
+    "prover_version": "1.0.0",
+    "generation_time_ms": 0.0
+  }
+}

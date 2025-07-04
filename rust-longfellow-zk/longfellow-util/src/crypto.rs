@@ -1,7 +1,7 @@
 /// Cryptographic utilities
 
-use sha2::{Sha256, Digest as Sha2Digest};
-use sha3::{Sha3_256, Digest as Sha3Digest};
+use sha2::{Sha256, Digest};
+use sha3::Sha3_256;
 use longfellow_core::{LongfellowError, Result};
 
 /// Compute SHA-256 hash
@@ -109,23 +109,27 @@ pub fn ct_equal(a: &[u8], b: &[u8]) -> bool {
 
 /// Base64 encoding
 pub fn base64_encode(data: &[u8]) -> String {
-    base64::encode(data)
+    use base64::Engine;
+    base64::engine::general_purpose::STANDARD.encode(data)
 }
 
 /// Base64 decoding
 pub fn base64_decode(s: &str) -> Result<Vec<u8>> {
-    base64::decode(s)
+    use base64::Engine;
+    base64::engine::general_purpose::STANDARD.decode(s)
         .map_err(|e| LongfellowError::ParseError(format!("Base64 decode error: {}", e)))
 }
 
 /// URL-safe base64 encoding
 pub fn base64url_encode(data: &[u8]) -> String {
-    base64::encode_config(data, base64::URL_SAFE_NO_PAD)
+    use base64::Engine;
+    base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(data)
 }
 
 /// URL-safe base64 decoding
 pub fn base64url_decode(s: &str) -> Result<Vec<u8>> {
-    base64::decode_config(s, base64::URL_SAFE_NO_PAD)
+    use base64::Engine;
+    base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(s)
         .map_err(|e| LongfellowError::ParseError(format!("Base64URL decode error: {}", e)))
 }
 

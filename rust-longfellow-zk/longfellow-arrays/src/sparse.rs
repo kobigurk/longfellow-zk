@@ -103,7 +103,7 @@ impl<F: Field> Sparse<F> {
         let mut current = self.corners[0].clone();
 
         for i in 1..self.corners.len() {
-            let corner = &self.corners[i];
+            let corner = self.corners[i].clone();
             if corner.p0 == current.p0 && corner.p1 == current.p1 && corner.p2 == current.p2 {
                 current.v += corner.v;
             } else {
@@ -111,7 +111,7 @@ impl<F: Field> Sparse<F> {
                     self.corners[write_idx] = current;
                     write_idx += 1;
                 }
-                current = corner.clone();
+                current = corner;
             }
         }
 

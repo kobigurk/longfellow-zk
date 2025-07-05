@@ -6,6 +6,7 @@ pub mod interpolation;
 pub mod reed_solomon;
 pub mod convolution;
 pub mod reed_solomon_advanced;
+pub mod reed_solomon_advanced_decode;
 pub mod reed_solomon_lch14;
 pub mod reed_solomon_unified;
 pub mod utility;

@@ -5,6 +5,7 @@
 pub mod cpp_verifier_interop;
 pub mod cpp_verifier_full;
 pub mod generate_test_proofs;
+pub mod ligero_verifier_real;
 
 // Re-export the main FFI functions
 pub use cpp_verifier_interop::{

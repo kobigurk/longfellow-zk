@@ -11,8 +11,11 @@ use std::collections::HashMap;
 
 pub mod statement;
 pub mod prover;
+pub mod prover_impl;
+pub mod prover_full;
 pub mod verifier;
 pub mod document;
+pub mod serialization;
 
 pub use statement::{Statement, Predicate, DocumentType};
 pub use prover::ZkProver;
@@ -54,6 +57,18 @@ pub struct ProofMetadata {
     
     /// Circuit statistics
     pub circuit_stats: CircuitStats,
+    
+    /// Proof generation time in milliseconds
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proof_generation_time_ms: Option<u64>,
+    
+    /// Reed-Solomon encoding rate
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reed_solomon_rate: Option<f64>,
+    
+    /// Encoding type used
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encoding_type: Option<String>,
 }
 
 /// Circuit statistics
@@ -174,6 +189,9 @@ pub struct ProofOptions {
     
     /// Optimize for proof size
     pub optimize_size: bool,
+    
+    /// Reed-Solomon encoding rate (optional)
+    pub reed_solomon_rate: Option<f64>,
 }
 
 impl Default for ProofOptions {
@@ -183,6 +201,7 @@ impl Default for ProofOptions {
             use_sumcheck: true,
             parallel: true,
             optimize_size: false,
+            reed_solomon_rate: None,
         }
     }
 }

@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Longfellow ZK Team"]
 
+[lib]
+name = "longfellow_interop"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [[bin]]
 name = "rust_prover"
 path = "src/rust_prover.rs"
@@ -28,17 +32,18 @@ path = "src/complete_demo.rs"
 name = "comparative_benchmark"
 path = "src/comparative_benchmark.rs"
 
+[[bin]]
+name = "generate_test_proofs"
+path = "src/generate_test_proofs.rs"
+
 [dependencies]
 longfellow-core = { path = "../longfellow-core" }
 longfellow-algebra = { path = "../longfellow-algebra" }
-# longfellow-arrays = { path = "../longfellow-arrays" }
-# longfellow-random = { path = "../longfellow-random" }
-# longfellow-merkle = { path = "../longfellow-merkle" }
-# longfellow-sumcheck = { path = "../longfellow-sumcheck" }
-# longfellow-ligero = { path = "../longfellow-ligero" }
-# longfellow-zk = { path = "../longfellow-zk" }
-# longfellow-circuits = { path = "../longfellow-circuits" }
-# longfellow-cbor = { path = "../longfellow-cbor" }
+longfellow-merkle = { path = "../longfellow-merkle" }
+longfellow-sumcheck = { path = "../longfellow-sumcheck" }
+longfellow-ligero = { path = "../longfellow-ligero" }
+longfellow-zk = { path = "../longfellow-zk" }
+longfellow-cbor = { path = "../longfellow-cbor" }
 longfellow-util = { path = "../longfellow-util" }
 
 serde = { workspace = true }
@@ -51,3 +56,9 @@ log = { workspace = true }
 env_logger = { workspace = true }
 sha2 = { workspace = true }
 chrono = { workspace = true }
+rand = { workspace = true }
+rayon = { workspace = true }
+libc = "0.2"
+
+[build-dependencies]
+cbindgen = "0.24"

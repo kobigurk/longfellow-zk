@@ -78,10 +78,11 @@ impl Fp128 {
             return Some(Self::one());
         }
         
-        // Parse the omega_32 value: 164956748514267535023998284330560247862
+        // Use the mathematically correct omega_32 value: 99753660205281253039813454253403999101
+        // This is a primitive 2^32 root of unity computed from primitive root 59
         let omega_32_bytes = [
-            0x36, 0xd8, 0x3d, 0x41, 0x23, 0x6f, 0xff, 0x42,
-            0xb4, 0x8e, 0xd3, 0x48, 0x9f, 0x83, 0x19, 0x7c,
+            0x7d, 0x0b, 0x89, 0x6c, 0x63, 0xd7, 0x3c, 0xbd,
+            0x95, 0x20, 0xb3, 0x04, 0x2b, 0xdb, 0x0b, 0x4b,
         ];
         let omega_32 = Self::from_bytes_le(&omega_32_bytes).ok()?;
         

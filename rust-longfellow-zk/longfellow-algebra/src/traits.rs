@@ -63,18 +63,25 @@ pub trait Field:
     }
 
     fn pow(&self, exp: &[u64]) -> Self {
-        let mut res = Self::one();
+        if exp.is_empty() {
+            return Self::one();
+        }
+        
+        let mut result = Self::one();
         let mut base = *self;
-
-        for &e in exp {
-            for i in 0..64 {
-                if (e >> i) & 1 == 1 {
-                    res *= base;
+        
+        for &limb in exp {
+            let mut remaining = limb;
+            while remaining > 0 {
+                if remaining & 1 == 1 {
+                    result *= &base;
                 }
                 base = base.square();
+                remaining >>= 1;
             }
         }
-        res
+        
+        result
     }
 
     fn batch_invert(elements: &mut [Self]) {
@@ -94,6 +101,13 @@ pub trait Field:
                 inv_acc = tmp;
             }
         }
+    }
+    
+    fn characteristic() -> u64 {
+        // For prime fields, this would be the prime
+        // For extension fields, this would be the characteristic of the base field
+        // Default implementation assumes prime field
+        0 // This should be overridden
     }
 }
 

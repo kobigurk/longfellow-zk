@@ -8,6 +8,10 @@ authors = ["Longfellow ZK Team"]
 name = "full_prover"
 path = "src/main.rs"
 
+[[bin]]
+name = "generate_report"
+path = "src/generate_report.rs"
+
 [dependencies]
 longfellow-core = { path = "../longfellow-core" }
 longfellow-algebra = { path = "../longfellow-algebra" }
@@ -33,3 +37,4 @@ sha2 = { workspace = true }
 chrono = { workspace = true }
 rand = { workspace = true }
 rayon = { workspace = true }
+num_cpus = "1.16"

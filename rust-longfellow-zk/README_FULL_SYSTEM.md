@@ -1,13 +1,15 @@
 # Longfellow ZK - Full System Implementation
 
-This is the complete implementation of the Longfellow Zero-Knowledge proof system, featuring:
+This is the complete implementation of the Longfellow Zero-Knowledge proof system with advanced Reed-Solomon encoding, featuring:
 
 - ✅ **Ligero polynomial commitment scheme**
 - ✅ **Sumcheck protocol for arithmetic circuits**
-- ✅ **Zero-knowledge layer for document proofs**
-- ✅ **Montgomery arithmetic (Fp128) with correct implementation**
+- ✅ **Reed-Solomon encoding with convolution-based interpolation (matching C++)**
+- ✅ **LCH14 algorithm for binary fields**
+- ✅ **Zero-knowledge layer for document proofs (JWT, mDOC, VC)**
+- ✅ **Montgomery arithmetic (Fp128) with edge case fixes**
 - ✅ **Full C++ interoperability with proof verification**
-- ✅ **Comprehensive benchmarks**
+- ✅ **Multiple serialization formats with compression**
 
 ## System Architecture
 

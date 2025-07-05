@@ -73,13 +73,18 @@ impl<F: Field> Layer<F> {
         
         match gate_type {
             GateType::Add(coeff) => {
-                self.quad.add_corner(output, left, 0, coeff)?;
-                self.quad.add_corner(output, 0, right, coeff)?;
+                // For add gate: output = coeff * (left + right)
+                // In quad form: coeff * gate[output] * (hand[left] + hand[right])
+                // Since hand indices are 1-based (0 means constant 1), we add 1
+                self.quad.add_corner(output, left + 1, 0, coeff)?;
+                self.quad.add_corner(output, 0, right + 1, coeff)?;
             }
             GateType::Mul(coeff) => {
-                self.quad.add_corner(output, left, right, coeff)?;
+                // For mul gate: output = coeff * left * right
+                self.quad.add_corner(output, left + 1, right + 1, coeff)?;
             }
             GateType::Const(value) => {
+                // For const gate: output = value
                 self.quad.add_corner(output, 0, 0, value)?;
             }
         }

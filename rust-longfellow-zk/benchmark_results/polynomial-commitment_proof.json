@@ -1,0 +1,21 @@
+{
+  "proof_type": "polynomial_commitment",
+  "version": "1.0.0",
+  "timestamp": 1751672924,
+  "security_bits": 128,
+  "proof_data": {
+    "type": "PolynomialCommitment",
+    "polynomial_degree": 3,
+    "commitment": "7533dac6329de8b6c8613c5c564fdca2715531c3195e9a1b22f80b29a960766d",
+    "opening_proof": "mock_opening_proof",
+    "evaluation_point": "FpGeneric(Nat(0xedb19bec797137d6378ea99d917137d6))",
+    "evaluation_value": "FpGeneric(Nat(0x4e7ee40d5767523d79ab4ab3f367523f))"
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "Fp128",
+    "computation_time_ms": 0,
+    "proof_size_bytes": 768,
+    "verification_key_size": 256
+  }
+}

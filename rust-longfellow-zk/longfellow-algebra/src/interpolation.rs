@@ -132,6 +132,9 @@ pub fn multipoint_evaluate<F: Field>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::polynomial::PolynomialInBasis;
+    use longfellow_core::Result;
+    use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct TestField(u64);

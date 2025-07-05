@@ -1,0 +1,25 @@
+{
+  "proof_type": "merkle_proof",
+  "version": "1.0.0",
+  "timestamp": 1751672925,
+  "security_bits": 256,
+  "proof_data": {
+    "type": "MerkleProof",
+    "tree_root": "mock_merkle_root_hash",
+    "leaf_index": 2,
+    "leaf_value": "626c6f636b33",
+    "proof_path": [
+      "sibling1_hash",
+      "sibling2_hash",
+      "sibling3_hash"
+    ],
+    "tree_size": 5
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "SHA3-256",
+    "computation_time_ms": 0,
+    "proof_size_bytes": 896,
+    "verification_key_size": 32
+  }
+}

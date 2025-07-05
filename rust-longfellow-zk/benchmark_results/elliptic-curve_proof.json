@@ -1,0 +1,24 @@
+{
+  "proof_type": "elliptic_curve",
+  "version": "1.0.0",
+  "timestamp": 1751672926,
+  "security_bits": 256,
+  "proof_data": {
+    "type": "EllipticCurve",
+    "curve": "P-256",
+    "operation": "point_addition",
+    "points": [
+      "mock_ec_point_1",
+      "mock_ec_point_2"
+    ],
+    "result": "mock_ec_result",
+    "signature": "mock_ecdsa_signature"
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "P-256",
+    "computation_time_ms": 0,
+    "proof_size_bytes": 640,
+    "verification_key_size": 64
+  }
+}

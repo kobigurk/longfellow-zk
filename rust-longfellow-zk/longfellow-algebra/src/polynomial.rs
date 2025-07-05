@@ -289,6 +289,8 @@ impl<F: Field> PolynomialInBasis<F> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use longfellow_core::Result;
+    use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct TestField(u64);

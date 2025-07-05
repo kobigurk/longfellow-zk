@@ -295,7 +295,7 @@ mod tests {
             circuit.clone(),
             &inputs,
             1,
-            SumcheckOptions::default(),
+            crate::SumcheckOptions::default(),
         ).unwrap();
         
         let proof = prover.prove(&instance, &mut OsRng).unwrap();

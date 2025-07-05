@@ -4,3 +4,6 @@ pub mod fp128;
 
 pub use fp_generic::FpGeneric;
 pub use fp128::Fp128;
+
+#[cfg(test)]
+mod test_montgomery;

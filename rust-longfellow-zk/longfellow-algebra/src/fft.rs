@@ -236,6 +236,7 @@ pub fn polynomial_multiplication<F: Field>(a: &[F], b: &[F], omega: F) -> Result
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ops::{Add, Sub, Mul, Neg, AddAssign, SubAssign, MulAssign};
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct TestField(u64);

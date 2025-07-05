@@ -1,0 +1,28 @@
+{
+  "proof_type": "field_arithmetic",
+  "version": "1.0.0",
+  "timestamp": 1751672924,
+  "security_bits": 128,
+  "proof_data": {
+    "type": "FieldArithmetic",
+    "statement": "(a + b) * c = d where a=15, b=25, c=3",
+    "public_inputs": {
+      "constraint": "(a + b) * c = d",
+      "result": "FpGeneric(Nat(0xf5387c270438096cfef11bd93f38096c))"
+    },
+    "witness": [
+      "FpGeneric(Nat(0x6b0f1e1f49f29c4c770d1dbf59f29c4c))",
+      "FpGeneric(Nat(0x07c3fcdece9459dfc66b36e9949459df))",
+      "FpGeneric(Nat(0xaf02e2d31130859b17cf5f8cad30859b))",
+      "FpGeneric(Nat(0xf5387c270438096cfef11bd93f38096c))"
+    ],
+    "constraints_satisfied": true
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "Fp128",
+    "computation_time_ms": 0,
+    "proof_size_bytes": 512,
+    "verification_key_size": 128
+  }
+}

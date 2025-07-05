@@ -1,0 +1,21 @@
+{
+  "proof_type": "ligero",
+  "version": "1.0.0",
+  "timestamp": 1751674839,
+  "security_bits": 80,
+  "proof_data": {
+    "type": "Ligero",
+    "instance_size": 3,
+    "constraint_count": 1,
+    "proof_size": 70,
+    "security_parameter": 80,
+    "proof_bytes": "6d6f636b5f6c696765726f5f70726f6f665f636f6e73747261696e745f6661696c6564"
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "Fp128",
+    "computation_time_ms": 0,
+    "proof_size_bytes": 70,
+    "verification_key_size": 512
+  }
+}

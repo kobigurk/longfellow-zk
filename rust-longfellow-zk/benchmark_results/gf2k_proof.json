@@ -1,0 +1,23 @@
+{
+  "proof_type": "gf2k",
+  "version": "1.0.0",
+  "timestamp": 1751672926,
+  "security_bits": 128,
+  "proof_data": {
+    "type": "Gf2k",
+    "field_size": 128,
+    "operation": "arithmetic_operations",
+    "operands": [
+      "Gf2_128(fedcba9876543210123456789abcdef0)",
+      "Gf2_128(f0f0f0f0f0f0f0f00f0f0f0f0f0f0f0f)"
+    ],
+    "result": "sum=Gf2_128(0e2c4a6886a4c2e01d3b597795b3d1ff), product=Gf2_128(00efc0d07f6fbf55c8d20b05b7527480), inverse=Some(Gf2_128(76fbc642ba23b05a6c33fe20bff37213))"
+  },
+  "metadata": {
+    "prover": "longfellow-full-prover",
+    "field": "GF(2^128)",
+    "computation_time_ms": 0,
+    "proof_size_bytes": 512,
+    "verification_key_size": 128
+  }
+}

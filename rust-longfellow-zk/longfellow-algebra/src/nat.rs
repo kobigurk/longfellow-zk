@@ -111,6 +111,24 @@ impl<const N: usize> Nat<N> {
         }
         borrow
     }
+    
+    /// Multiply two Nat values and return a vector with 2*N limbs
+    pub fn mul_wide(&self, other: &Self) -> (Vec<Limb>, Limb) {
+        let mut result = vec![0 as Limb; N * 2];
+        
+        for i in 0..N {
+            let mut carry = 0;
+            for j in 0..N {
+                let (lo, hi) = mul_wide(self.limbs[i], other.limbs[j]);
+                let (sum, c) = add_with_carry(result[i + j], lo, carry);
+                result[i + j] = sum;
+                carry = hi + c;
+            }
+            result[i + N] = carry;
+        }
+        
+        (result, 0)
+    }
 
     pub fn shr1(&mut self) {
         let mut carry = 0;
@@ -219,17 +237,11 @@ impl<const N: usize> Debug for Nat<N> {
 
 #[inline]
 pub fn add_with_carry(a: Limb, b: Limb, carry: Limb) -> (Limb, Limb) {
-    #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
-    {
-        let (sum, carry_out) = crate::field::asm_support::add_with_carry_asm(a, b, carry as u8);
-        (sum, carry_out as Limb)
-    }
-    #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "64")))]
-    {
-        let (sum1, c1) = a.overflowing_add(b);
-        let (sum2, c2) = sum1.overflowing_add(carry);
-        (sum2, (c1 as Limb) | (c2 as Limb))
-    }
+    // Always use the general implementation for now
+    // The assembly version has bugs
+    let (sum1, c1) = a.overflowing_add(b);
+    let (sum2, c2) = sum1.overflowing_add(carry);
+    (sum2, (c1 as Limb) | (c2 as Limb))
 }
 
 #[inline]

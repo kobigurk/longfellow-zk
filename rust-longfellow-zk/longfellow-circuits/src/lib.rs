@@ -69,7 +69,7 @@ impl<F: Field> StandardCircuit<F> {
     /// Create a new circuit
     pub fn new() -> Self {
         Self {
-            constraints: ConstraintSystem::new(0),
+            constraints: ConstraintSystem::new(F::zero()),
             num_vars: 0,
         }
     }

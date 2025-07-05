@@ -56,9 +56,134 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
 
     #[inline]
     pub fn from_montgomery(&self) -> Nat<N> {
-        let mut result = self.value;
-        Self::montgomery_reduce::<N, R>(&mut result);
+        // Convert from Montgomery form by computing a * R^(-1) mod p
+        // This is the REDC algorithm (Montgomery reduction)
+        
+        // Create working array - we need 2N limbs for intermediate results
+        let mut t = [0 as Limb; 32]; // Max size, we'll use first 2*N entries
+        
+        // Copy input value to lower limbs
+        for i in 0..N {
+            t[i] = self.value.limbs[i];
+        }
+        
+        // Montgomery reduction: REDC algorithm
+        // For i from 0 to N-1:
+        //   m = t[i] * INV mod 2^64
+        //   t = (t + m * modulus * 2^(64*i)) / 2^64
+        // Result is t / 2^(64*(N-1))
+        
+        for i in 0..N {
+            // m = (t mod 2^64) * INV mod 2^64
+            let m = t[i].wrapping_mul(Self::INV);
+            
+            // Add m * modulus to t, shifted by i limbs
+            let mut carry = 0u64;
+            for j in 0..N {
+                let (lo, hi) = nat::mul_wide(m, Self::MODULUS.limbs[j]);
+                let (sum, c1) = nat::add_with_carry(t[i + j], lo, carry);
+                t[i + j] = sum;
+                carry = hi + (c1 as u64);
+            }
+            
+            // Propagate final carry
+            t[i + N] = t[i + N].wrapping_add(carry);
+        }
+        
+        // The result is in positions N through 2N-1
+        let mut result = Nat::<N>::default();
+        for i in 0..N {
+            result.limbs[i] = t[N + i];
+        }
+        
+        // Conditional subtraction if result >= modulus
+        let mut temp = result.clone();
+        let borrow = temp.sub_with_borrow(&Self::MODULUS);
+        
+        // If no borrow occurred (i.e., result >= modulus), use the subtracted value
+        use subtle::ConditionallySelectable;
+        result = Nat::conditional_select(&result, &temp, Choice::from((borrow == 0) as u8));
+        
         result
+    }
+
+    #[inline]
+    fn montgomery_reduce_wide<const M: usize, Red: FieldReduction<M>>(extended: &mut Vec<Limb>) {
+        // Montgomery reduction for a 2M-limb value
+        // Ensure we have space for carries
+        while extended.len() < 2 * M + 1 {
+            extended.push(0);
+        }
+        
+        for i in 0..M {
+            let k = extended[i].wrapping_mul(Red::INV);
+            let mut carry = 0;
+            
+            for j in 0..M {
+                let (lo, hi) = nat::mul_wide(k, Red::MODULUS.limbs[j]);
+                let (sum1, c1) = nat::add_with_carry(extended[i + j], lo, carry);
+                extended[i + j] = sum1;
+                carry = hi.wrapping_add(c1);
+            }
+            
+            // Propagate carry to higher limbs
+            let mut idx = i + M;
+            while idx < extended.len() && carry > 0 {
+                let (sum, c) = nat::add_with_carry(extended[idx], 0, carry);
+                extended[idx] = sum;
+                carry = c;
+                idx += 1;
+            }
+        }
+        
+        // Shift right by M limbs (divide by R)
+        // After Montgomery reduction, we have a value < 2R
+        // The value is stored in positions M through 2M (and possibly 2M+1 if there's overflow)
+        
+        // Create result with the shifted value
+        let mut result = Nat::<M>::default();
+        for i in 0..M {
+            result.limbs[i] = extended[i + M];
+        }
+        
+        // Check if there's an overflow limb (position 2M)
+        if extended.len() > 2 * M && extended[2 * M] != 0 {
+            // We have overflow, which means the value is >= 2^(64*M)
+            // For Fp128, this means value >= 2^128
+            // Since p < 2^128, we need to reduce
+            // The value is 2^128 + result, so after subtracting p:
+            // (2^128 + result) - p = (2^128 - p) + result = R + result
+            
+            // Add R to result (since 2^128 mod p = R)
+            let carry = result.add_with_carry(&Red::R);
+            
+            // If there was a carry, or if result >= modulus, reduce
+            if carry != 0 || result >= Red::MODULUS {
+                result.sub_with_borrow(&Red::MODULUS);
+            }
+        } else {
+            // No overflow, just check if result >= modulus
+            let needs_reduction = {
+                let mut greater_or_equal = true;
+                for i in (0..M).rev() {
+                    if result.limbs[i] < Red::MODULUS.limbs[i] {
+                        greater_or_equal = false;
+                        break;
+                    } else if result.limbs[i] > Red::MODULUS.limbs[i] {
+                        break;
+                    }
+                }
+                greater_or_equal
+            };
+            
+            if needs_reduction {
+                result.sub_with_borrow(&Red::MODULUS);
+            }
+        }
+        
+        // Copy result back to extended
+        extended.resize(M, 0);
+        extended.copy_from_slice(&result.limbs);
     }
 
     #[inline]
@@ -103,28 +228,14 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
 
     #[inline]
     fn mul_montgomery(&mut self, other: &Self) {
-        let mut result = vec![0 as Limb; N * 2];
+        // First, multiply the two numbers to get a 2N-limb result
+        let (mut result, _) = self.value.mul_wide(&other.value);
         
-        for i in 0..N {
-            let mut carry = 0;
-            for j in 0..N {
-                let (lo, hi) = nat::mul_wide(self.value.limbs[i], other.value.limbs[j]);
-                let (sum, c) = nat::add_with_carry(result[i + j], lo, carry);
-                result[i + j] = sum;
-                carry = hi.wrapping_add(c);
-            }
-            result[i + N] = carry;
-        }
+        // Apply Montgomery reduction to the 2N-limb result
+        Self::montgomery_reduce_wide::<N, R>(&mut result);
         
-        let _reduced: Nat<N> = Nat::new(result[..N].try_into().unwrap());
-        for i in 0..N {
-            R::reduction_step(&mut result[i..], Self::INV, &Self::MODULUS);
-        }
-        
-        self.value.limbs.copy_from_slice(&result[N..]);
-        let borrow = self.value.sub_with_borrow(&Self::MODULUS);
-        self.value
-            .conditional_add(&Self::MODULUS, Choice::from(borrow as u8));
+        // Copy the reduced result back
+        self.value.limbs.copy_from_slice(&result[..N]);
     }
 
     pub fn square(&self) -> Self {
@@ -136,7 +247,7 @@ impl<const N: usize, R: FieldReduction<N>> FpGeneric<N, R> {
     pub fn invert(&self) -> Option<Self> {
         let mut a = self.from_montgomery();
         let mut b = Self::MODULUS;
-        let mut u = Self::ONE.value;
+        let mut u = Nat::ONE;  // Start with 1, not R
         let mut v = Nat::ZERO;
 
         while !bool::from(a.is_zero()) {
